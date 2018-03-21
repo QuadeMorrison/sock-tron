@@ -165,3 +165,16 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*

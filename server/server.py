@@ -1,8 +1,8 @@
-import settings
 from aiohttp import web
 import socketio
-
-START_POS = { 'x': 245, 'y': 245 }
+import asyncio
+import settings
+import rooms
 
 sio = socketio.AsyncServer()
 app = web.Application()
@@ -10,28 +10,49 @@ sio.attach(app)
 
 @sio.on('connect')
 async def connect(sid, environ):
-    print("connect ", sid)
+    rooms.assign_room(sid)
+    print('connected')
+    await sio.emit('init_settings', settings.get_settings_obj())
+    sio.start_background_task(move_player, sid)
 
-@sio.on('init_game')
-async def init_game(sid, window, player):
-    settings.window = window
-    settings.player = player
-
-    await send_position(settings.get_start_position())
+@sio.on('disconnect')
+async def disconnect(sid):
+    print('disconnected')
+    settings.player_disconnected = True
 
 @sio.on('keydown')
-async def keydown(sid, key, position):
-    print("keydown: ", key, position)
-    dimension = "width" if (key == "left" or key == "right") else "height"
-    player_size = settings.player[dimension]
-    move_by = player_size if (key == "left" or key == "up") else 0 - player_size
-    position["x" if (dimension == "width") else "y"] -= move_by
+async def keydown(sid, key):
+    dir = settings.player_direction
+    print(dir, key)
+    if (not (dir == 'left' and key == 'right') and
+        not (dir == 'right' and key == 'left') and
+        not (dir == 'up' and key == 'down') and
+        not (dir == 'down' and key == 'up')):
+        settings.player_direction = key
 
-    await send_position(position)
+async def move_player(sid):
+    while True:
+        player = settings.player_details[sid]
+        room_players = rooms.get_players(player['room'])
+        index = player['number'] - 1
+        direction = settings.player_direction
+        dimension = "width" if (direction == "left" or direction == "right") else "height"
+        player_size = settings.player[dimension]
+        move_by = player_size if (direction == "right" or direction == "down") else 0 - player_size
+        axis = "x" if (dimension == "width") else "y"
 
+        if (axis == "x"):
+            room_players[index]['head_x'] += move_by
+            head_x = room_players[index]['head_x']
+            room_players[index][head_x] = []
+            room_players[index][head_x].append(room_players[index]['head_y'])
+        else:
+            room_players[index]['head_y'] += move_by
+            room_players[index][room_players[index]['head_x']].append(room_players[index]['head_y'])
 
-async def send_position(position):
-    await sio.emit("update_position", position)
+        await asyncio.sleep(0.1)
+        await sio.emit('move_player', room_players[index])
+
 
 if __name__ == '__main__':
-    web.run_app(app)
+    web.run_app(app, port=8080)
