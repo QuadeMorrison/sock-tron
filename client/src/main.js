@@ -5,7 +5,7 @@ import App from './App'
 import router from './router'
 import VueSocketio from 'vue-socket.io';
 
-Vue.use(VueSocketio, 'http://0.0.0.0:8080');
+Vue.use(VueSocketio, 'http://0.0.0.0:8888');
 
 Vue.config.productionTip = false
 
