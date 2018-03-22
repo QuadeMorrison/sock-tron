@@ -3,22 +3,31 @@ import socketio
 import asyncio
 import settings
 import rooms
+import sys
+
+# Taken from: https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 sio = socketio.AsyncServer()
-app = web.Application()
-sio.attach(app)
 
 @sio.on('connect')
 async def connect(sid, environ):
-    rooms.assign_room(sid)
-    print('connected')
+    # Is this function thread safe? And how/why?
+    # We don't need the room_num right now, prob in the future though.
+    room_num = rooms.assign_room(sid)
+    print('Connected', sid)
+
+    # What does await emit do, does it wait for a verification to come from the
+    # client? If not, then that await is pointless, right?
     await sio.emit('init_settings', settings.get_settings_obj())
-    sio.start_background_task(move_player, sid)
 
 @sio.on('disconnect')
 async def disconnect(sid):
-    print('disconnected')
-    settings.player_disconnected = True
+    if rooms.remove_player(sid):
+        print('Disconnected: ', sid)
+    else:
+        eprint("WARNING: Disconnect without initial connect.")
 
 @sio.on('keydown')
 async def keydown(sid, key):
@@ -30,21 +39,33 @@ async def keydown(sid, key):
         not (dir == 'down' and key == 'up')):
         settings.player_direction = key
 
-async def move_player(sid):
-    while True:
-        player = settings.player_details[sid]
-        room_players = rooms.get_players(player['room'])
-        index = player['number'] - 1
-        direction = settings.player_direction
-        dimension = "width" if (direction == "left" or direction == "right") else "height"
-        move_by = 1 if (direction == "right" or direction == "down") else -1
-        axis = "x" if (dimension == "width") else "y"
+# This function can assume just one room.
+async def update_players(room_ind):
+    room = rooms.get_room(room_ind)
 
-        room_players[index][axis] += move_by
+    while True:
+        for k, v in room:
+            player = v
+            direction = settings.player_direction
+            dimension = "width" if (direction == "left" or direction == "right") else "height"
+            move_by = 1 if (direction == "right" or direction == "down") else -1
+            axis = "x" if (dimension == "width") else "y"
+
+            room[k][axis] += move_by
 
         await asyncio.sleep(0.1)
-        await sio.emit('move_player', room_players[index])
-        print(room_players[index])
+        sio.emit('update_players', room)
+        print(room)
+
+        # If everyone leaves the room, we don't need this thread anymore.
+        if len(room) <= 0:
+            print("All players left room %d." % room_ind)
+            break
 
 if __name__ == '__main__':
+    app = web.Application()
+    sio.attach(app)
+    sio.start_background_task(update_players, 1)
     web.run_app(app, port=8888)
+
+

@@ -38,11 +38,8 @@ export default {
       this.player.height = 10
       this.context = this.$refs.game_window.getContext("2d")
     },
-    move_player(pos) {
-      this.pl_x = pos.x
-      this.pl_y = pos.y
-      this.color = pos.color
-      this.draw_player()
+    update_players(players) {
+      //console.log(players)
     }
   },
   methods: {

@@ -4,7 +4,8 @@ import math
 def create_object(height = 0, width = 0):
     return { 'height': height, 'width': width }
 
-def get_start_position(player_num):
+# Takes in max_players as well, for different room maxes as a future option.
+def create_player(player_num, max_players):
     num_players_in_y = math.floor(math.sqrt(max_players))
     num_players_in_x = max_players / num_players_in_y
 
@@ -24,8 +25,7 @@ def get_start_position(player_num):
 player_colors = ['red','cyan','lime','yellow']
 window = create_object(50, 50)
 player_direction = "up"
-player_disconnected = False
-player_details = {}
+player_details = []
 max_players = 4
 
 def get_settings_obj():
