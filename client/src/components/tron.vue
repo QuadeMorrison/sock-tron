@@ -46,6 +46,7 @@ export default {
     key_handler(e) {
       let key = keys[e.which]
       if (key) this.$socket.emit('keydown', key)
+      if (key) this.$socket.emit('enter_room', key)
       this.max_width 
     },
     draw_players(players) {

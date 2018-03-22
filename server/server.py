@@ -13,7 +13,7 @@ sio = socketio.AsyncServer()
 
 @sio.on('connect')
 async def connect(sid, environ):
-    room_ind, is_new_room = rooms.assign_room(sid)
+    room_ind, is_new_room = rooms.assign_room("main_room")
     rooms.spawn_players(room_ind)
     print('Connected', sid)
 
@@ -24,6 +24,17 @@ async def connect(sid, environ):
     # Wanna create a new room if there is a new one!
     if is_new_room:
         sio.start_background_task(update_players, room_ind)
+
+# Room test
+@sio.on('enter_room')
+def enter_room(sid, data):
+    sio.enter_room(sid, 1)
+    print(sid, "is entering room", 1)
+
+@sio.on('leave room')
+def leave_room(sid, data):
+    print("leaving room")
+    sio.leave_room(sid, 1)
 
 @sio.on('disconnect')
 async def disconnect(sid):
@@ -58,13 +69,11 @@ async def update_players(room_ind):
         # Don't want to emit the sid of each client.
         emitted_list = rooms.room_to_list(room_ind)
         await asyncio.sleep(0.1)
-        await sio.emit('update_players', emitted_list)
-        # print(emitted_list)
+        await sio.emit('update_players', emitted_list, room=1)
 
         # If everyone leaves the room, we don't need this thread anymore.
         leave = False
         for k, pl in room.items():
-            print(pl)
             if pl['alive']:
                 leave = False
                 break

@@ -6,36 +6,31 @@ import settings
 #rooms = OrderedDict([(1, [])])
 
 # Signifies private with the "_"
-_room = None
+_room_list = {}
 sid_to_room_id = {}
 
 # Creates a player for the room, and returns the id of the room that the player
-# was assigned to. Also returns a boolean of whether or not the room is brand new.
-def assign_room(sid):
-    global _room
-    room_ind = 1
+# was assigned to.
+def assign_room(sid, room_id):
+    sid_to_room_id[sid] = room_id
 
-    sid_to_room_id[sid] = room_ind
-
-    is_room_new = False
-    if _room == None:
-        _room = {}
-        is_room_new = True
-
-    player_count = get_total_players(room_ind)
+    _room = get_room(room_id)
+    player_count = get_total_players(room_id)
     _room[sid] = settings.create_player(player_count)
 
-    return room_ind, is_room_new
+    return room_id
 
-def room_to_list(room_ind):
-    if _room != None:
+def room_to_list(room_id):
+    if room_id in _room_list:
+        _room = _room_list[room_id]
         return [_room[k] for k in _room]
     else:
         return []
 
-def spawn_players(room_ind):
+def spawn_players(room_id):
+
     coords = settings.calc_player_spawn_coords(len(_room))
-    rooms = room_to_list(room_ind)
+    rooms = room_to_list(room_id)
 
     for i, val in enumerate(rooms):
         val['x'] = coords[i][0]
@@ -52,21 +47,23 @@ def remove_player(sid):
     else:
         return False
 
-def destroy_room(room_ind):
-    global _room
-    if _room != None:
+def destroy_room(room_id):
+    global _room_list
+    if room_id in _room_list:
         # Enforcing garbage collection I suppose.
         # Can't hurt to be safe :P, or can it?
-        _room.clear()
-        _room = None
+        _room_list[room_id].clear()
+        del(_room_list[_room_id])
 
-def get_total_players(room_ind):
-    global _room
+def get_total_players(room_id):
+    _room = get_room(room_id)
     return 0 if _room == None else len(_room)
 
-def get_room(room_ind):
-    global _room
-    return _room
+def get_room(room_id):
+    global _room_list
+    if not room_id in _room_list:
+        _room_list[_room_id] = {}
+    return _room_list[_room_id]
 
 def get_player(sid):
     room_id = sid_to_room_id[sid]
