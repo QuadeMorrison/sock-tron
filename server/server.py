@@ -40,18 +40,11 @@ async def move_player(sid):
         move_by = 1 if (direction == "right" or direction == "down") else -1
         axis = "x" if (dimension == "width") else "y"
 
-        if (axis == "x"):
-            room_players[index]['head_x'] += move_by
-            head_x = room_players[index]['head_x']
-            room_players[index][head_x] = []
-            room_players[index][head_x].append(room_players[index]['head_y'])
-        else:
-            room_players[index]['head_y'] += move_by
-            room_players[index][room_players[index]['head_x']].append(room_players[index]['head_y'])
+        room_players[index][axis] += move_by
 
         await asyncio.sleep(0.1)
         await sio.emit('move_player', room_players[index])
-
+        print(room_players[index])
 
 if __name__ == '__main__':
     web.run_app(app, port=8888)

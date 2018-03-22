@@ -19,7 +19,7 @@ def get_start_position(player_num):
     x = calc_position("width", num_players_in_x, x_player_num if x_player_num != 0 else num_players_in_x)
     y = calc_position("height", num_players_in_y, math.ceil(player_num / num_players_in_y))
     color = player_colors[player_num % len(player_colors) - 1]
-    return { 'color': color, 'head_x': x, 'head_y': y, x: [y] }
+    return { 'color': color, 'x': x, 'y': y }
 
 player_colors = ['red','cyan','lime','yellow']
 window = create_object(50, 50)

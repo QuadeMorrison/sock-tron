@@ -13,7 +13,8 @@ export default {
   data () {
     return { 
       context: null,
-      position: null,
+      pl_x: 0,
+      pl_y: 0,
       background: 'black',
       num: 0,
       window: { height: 500, width: 500 },
@@ -37,8 +38,10 @@ export default {
       this.player.height = 10
       this.context = this.$refs.game_window.getContext("2d")
     },
-    move_player(position) {
-      this.position = position
+    move_player(pos) {
+      this.pl_x = pos.x
+      this.pl_y = pos.y
+      this.color = pos.color
       this.draw_player()
     }
   },
@@ -49,14 +52,10 @@ export default {
       this.max_width 
     },
     draw_player() {
-      Object.keys(this.position).forEach(x => {
-        if (!isNaN(x)) {
-          this.position[x].forEach(y => {
-            this.context.fillStyle = this.position.color
-            this.context.fillRect(x*10, y*10, this.player.height, this.player.width)
-          })
-        }
-      })
+      this.context.fillStyle = this.color
+      this.context.fillRect(this.pl_x*10, this.pl_y*10, this.player.height, this.player.width)
+      // I'm keeping this line for reference. I always forget my javascript.
+      // Object.keys(this.position).forEach(x => { if (!isNaN(x)) { this.position[x].forEach(y => { }) } })
     }
   },
   mounted() {
