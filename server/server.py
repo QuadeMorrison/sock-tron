@@ -5,6 +5,9 @@ import settings
 import rooms
 import sys
 
+# Important.
+# Right now, only room_main works, but you can add new rooms.
+
 # Taken from: https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -13,37 +16,49 @@ sio = socketio.AsyncServer()
 
 @sio.on('connect')
 async def connect(sid, environ):
-    room_ind, is_new_room = rooms.assign_room("main_room")
-    rooms.spawn_players(room_ind)
-    print('Connected', sid)
-
     # What does await emit do, does it wait for a verification to come from the
     # client? If not, then that await is pointless, right?
     await sio.emit('init_settings', settings.get_settings_obj())
-
-    # Wanna create a new room if there is a new one!
-    if is_new_room:
-        sio.start_background_task(update_players, room_ind)
+    print('Connected', sid)
 
 # Room test
 @sio.on('enter_room')
-def enter_room(sid, data):
-    sio.enter_room(sid, 1)
-    print(sid, "is entering room", 1)
+def enter_room(sid, room_id):
+    print(sid, "is entering room", room_id)
 
-@sio.on('leave room')
-def leave_room(sid, data):
-    print("leaving room")
-    sio.leave_room(sid, 1)
+    # Join room
+    is_new_room = rooms.assign_room(sid, room_id)
 
-@sio.on('disconnect')
-async def disconnect(sid):
+    # Spawn
+    rooms.spawn_players(room_id)
+
+    # Update will work.
+    sio.enter_room(sid, room_id)
+
+    # Wanna create a new room if there is a new one!
+    if not is_new_room:
+        print("Starting match with room", room_id)
+        sio.start_background_task(update_players, room_id)
+
+def exit_match(sid):
     pl = rooms.get_player(sid)
     pl['alive'] = False
 
+    print(sid, "Leaving room")
+    room_id = rooms.sid_to_room_id(sid)
+    sio.leave_room(sid, room_id)
+
+@sio.on('leave room')
+async def leave_room(sid, data):
+    exit_match(sid)
+
+@sio.on('disconnect')
+async def disconnect(sid):
+    exit_match(sid)
+
 @sio.on('keydown')
 async def keydown(sid, key):
-    room_id = rooms.sid_to_room_id[sid]
+    room_id = rooms.sid_to_room_id(sid)
     pl = rooms.get_player(sid)
     prev_key = pl['dir']
     if (not (key == 'left'  and prev_key == 'right') and
@@ -51,7 +66,7 @@ async def keydown(sid, key):
         not (key == 'up'    and prev_key == 'down')  and
         not (key == 'down'  and prev_key == 'up')):
         pl['dir'] = key
-        print("%s: Turned %s." % (sid, key))
+        # print("%s: Turned %s." % (sid, key))
 
 # This function can assume just one room.
 async def update_players(room_ind):
@@ -69,7 +84,7 @@ async def update_players(room_ind):
         # Don't want to emit the sid of each client.
         emitted_list = rooms.room_to_list(room_ind)
         await asyncio.sleep(0.1)
-        await sio.emit('update_players', emitted_list, room=1)
+        await sio.emit('update_players', emitted_list, room="main_room")
 
         # If everyone leaves the room, we don't need this thread anymore.
         leave = False
@@ -88,5 +103,3 @@ if __name__ == '__main__':
     app = web.Application()
     sio.attach(app)
     web.run_app(app, port=8888)
-
-
