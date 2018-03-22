@@ -13,14 +13,17 @@ sio = socketio.AsyncServer()
 
 @sio.on('connect')
 async def connect(sid, environ):
-    # Is this function thread safe? And how/why?
-    # We don't need the room_num right now, prob in the future though.
-    room_num = rooms.assign_room(sid)
+    room_ind, is_new_room = rooms.assign_room(sid)
+    rooms.spawn_players(room_ind)
     print('Connected', sid)
 
     # What does await emit do, does it wait for a verification to come from the
     # client? If not, then that await is pointless, right?
     await sio.emit('init_settings', settings.get_settings_obj())
+
+    # Wanna create a new room if there is a new one!
+    if is_new_room:
+        sio.start_background_task(update_players, room_ind)
 
 @sio.on('disconnect')
 async def disconnect(sid):
@@ -31,41 +34,45 @@ async def disconnect(sid):
 
 @sio.on('keydown')
 async def keydown(sid, key):
-    dir = settings.player_direction
-    print(dir, key)
-    if (not (dir == 'left' and key == 'right') and
-        not (dir == 'right' and key == 'left') and
-        not (dir == 'up' and key == 'down') and
-        not (dir == 'down' and key == 'up')):
-        settings.player_direction = key
+    room_id = rooms.sid_to_room_id[sid]
+    room = rooms.get_room(room_id)
+    prev_key = room[sid]['dir']
+    if (not (key == 'left'  and prev_key == 'right') and
+        not (key == 'right' and prev_key == 'left')  and
+        not (key == 'up'    and prev_key == 'down')  and
+        not (key == 'down'  and prev_key == 'up')):
+        room[sid]['dir'] = key
+        print("%s: Turned %s." % (sid, key))
 
 # This function can assume just one room.
 async def update_players(room_ind):
     room = rooms.get_room(room_ind)
 
     while True:
-        for k, v in room:
-            player = v
-            direction = settings.player_direction
-            dimension = "width" if (direction == "left" or direction == "right") else "height"
-            move_by = 1 if (direction == "right" or direction == "down") else -1
-            axis = "x" if (dimension == "width") else "y"
+        for k, v in room.items():
+            dir = v['dir']
+            dimension = "x" if (dir == "left" or dir == "right") else "y"
+            move_by = 1 if (dir == "right" or dir == "down") else -1
+            axis = "x" if (dimension == "x") else "y"
 
-            room[k][axis] += move_by
+            v[axis] += move_by
 
+        # Don't want to emit the sid of each client.
+        emitted_list = rooms.room_to_list(room_ind)
         await asyncio.sleep(0.1)
-        sio.emit('update_players', room)
-        print(room)
+        await sio.emit('update_players', emitted_list)
+        # print(emitted_list)
 
         # If everyone leaves the room, we don't need this thread anymore.
         if len(room) <= 0:
-            print("All players left room %d." % room_ind)
             break
+
+    print("All players left room %d." % room_ind)
+    rooms.destroy_room(room_ind)
 
 if __name__ == '__main__':
     app = web.Application()
     sio.attach(app)
-    sio.start_background_task(update_players, 1)
     web.run_app(app, port=8888)
 
 

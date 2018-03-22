@@ -29,7 +29,6 @@ export default {
       }
     },
     init_settings(settings) {
-      console.log('test')
       this.window = settings.window
       this.window.width *= 10
       this.window.height *= 10
@@ -39,7 +38,8 @@ export default {
       this.context = this.$refs.game_window.getContext("2d")
     },
     update_players(players) {
-      //console.log(players)
+      // In the future, we don't want drawing events here, to make it nice and smooth.
+      this.draw_players(players)
     }
   },
   methods: {
@@ -48,9 +48,13 @@ export default {
       if (key) this.$socket.emit('keydown', key)
       this.max_width 
     },
-    draw_player() {
-      this.context.fillStyle = this.color
-      this.context.fillRect(this.pl_x*10, this.pl_y*10, this.player.height, this.player.width)
+    draw_players(players) {
+      for (let i = 0; i < players.length; i++) {
+        let pl = players[i]
+        this.context.fillStyle = pl.color
+        this.context.fillRect(pl.x*10, pl.y*10, this.player.height, this.player.width)
+      }
+
       // I'm keeping this line for reference. I always forget my javascript.
       // Object.keys(this.position).forEach(x => { if (!isNaN(x)) { this.position[x].forEach(y => { }) } })
     }
