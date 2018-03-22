@@ -27,21 +27,19 @@ async def connect(sid, environ):
 
 @sio.on('disconnect')
 async def disconnect(sid):
-    if rooms.remove_player(sid):
-        print('Disconnected: ', sid)
-    else:
-        eprint("WARNING: Disconnect without initial connect.")
+    pl = rooms.get_player(sid)
+    pl['alive'] = False
 
 @sio.on('keydown')
 async def keydown(sid, key):
     room_id = rooms.sid_to_room_id[sid]
-    room = rooms.get_room(room_id)
-    prev_key = room[sid]['dir']
+    pl = rooms.get_player(sid)
+    prev_key = pl['dir']
     if (not (key == 'left'  and prev_key == 'right') and
         not (key == 'right' and prev_key == 'left')  and
         not (key == 'up'    and prev_key == 'down')  and
         not (key == 'down'  and prev_key == 'up')):
-        room[sid]['dir'] = key
+        pl['dir'] = key
         print("%s: Turned %s." % (sid, key))
 
 # This function can assume just one room.
@@ -64,7 +62,14 @@ async def update_players(room_ind):
         # print(emitted_list)
 
         # If everyone leaves the room, we don't need this thread anymore.
-        if len(room) <= 0:
+        leave = False
+        for k, pl in room.items():
+            print(pl)
+            if pl['alive']:
+                leave = False
+                break
+
+        if leave or len(room) <= 0:
             break
 
     print("All players left room %d." % room_ind)

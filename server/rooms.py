@@ -67,3 +67,7 @@ def get_total_players(room_ind):
 def get_room(room_ind):
     global _room
     return _room
+
+def get_player(sid):
+    room_id = sid_to_room_id[sid]
+    return get_room(room_id)[sid]
