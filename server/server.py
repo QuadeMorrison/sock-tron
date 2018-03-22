@@ -37,8 +37,7 @@ async def move_player(sid):
         index = player['number'] - 1
         direction = settings.player_direction
         dimension = "width" if (direction == "left" or direction == "right") else "height"
-        player_size = settings.player[dimension]
-        move_by = player_size if (direction == "right" or direction == "down") else 0 - player_size
+        move_by = 1 if (direction == "right" or direction == "down") else -1
         axis = "x" if (dimension == "width") else "y"
 
         if (axis == "x"):

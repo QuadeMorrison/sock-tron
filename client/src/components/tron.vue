@@ -17,7 +17,7 @@ export default {
       background: 'black',
       num: 0,
       window: { height: 500, width: 500 },
-      player: { height: 0, width: 0 }
+      player: { height: 10, width: 10 }
     }
   },
   sockets: {
@@ -30,7 +30,11 @@ export default {
     init_settings(settings) {
       console.log('test')
       this.window = settings.window
-      this.player = settings.player
+      this.window.width *= 10
+      this.window.height *= 10
+      this.player = {}
+      this.player.width = 10
+      this.player.height = 10
       this.context = this.$refs.game_window.getContext("2d")
     },
     move_player(position) {
@@ -49,7 +53,7 @@ export default {
         if (!isNaN(x)) {
           this.position[x].forEach(y => {
             this.context.fillStyle = this.position.color
-            this.context.fillRect(x, y, this.player.height, this.player.width)
+            this.context.fillRect(x*10, y*10, this.player.height, this.player.width)
           })
         }
       })

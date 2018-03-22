@@ -22,17 +22,14 @@ def get_start_position(player_num):
     return { 'color': color, 'head_x': x, 'head_y': y, x: [y] }
 
 player_colors = ['red','cyan','lime','yellow']
-player = create_object(10, 10)
-window = create_object(500, 500)
+window = create_object(50, 50)
 player_direction = "up"
 player_disconnected = False
 player_details = {}
 max_players = 4
 
 def get_settings_obj():
-    global player
     global window
     return {
-        'player': player,
         'window': window
     }
