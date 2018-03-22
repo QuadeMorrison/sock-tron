@@ -12,14 +12,6 @@ sid_to_room_id = {}
 # Creates a player for the room, and returns the id of the room that the player
 # was assigned to. Also returns a boolean of whether or not the room is brand new.
 def assign_room(sid):
-    # open_room = list(rooms.keys())[-1]
-    # num_players_in_room = len(rooms.get(open_room))
-
-    # if (not num_players_in_room < settings.max_players):
-        # open_room += 1
-        # rooms.update({open_room : []})
-        # num_players_in_room = 0
-
     global _room
     room_ind = 1
 

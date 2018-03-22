@@ -51,8 +51,10 @@ export default {
     draw_players(players) {
       for (let i = 0; i < players.length; i++) {
         let pl = players[i]
-        this.context.fillStyle = pl.color
-        this.context.fillRect(pl.x*10, pl.y*10, this.player.height, this.player.width)
+        if (pl.alive) {
+          this.context.fillStyle = pl.color
+          this.context.fillRect(pl.x*10, pl.y*10, this.player.height, this.player.width)
+        }
       }
 
       // I'm keeping this line for reference. I always forget my javascript.
