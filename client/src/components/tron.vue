@@ -26,7 +26,7 @@ export default {
       // Mainly just for testing, enter the main room when you connect.
       this.$socket.emit('enter_room')
     },
-	 winner(players) {
+	 game_over(players) {
 		this.win_list = players;
 	 },
     init_settings(settings) {

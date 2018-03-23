@@ -83,7 +83,7 @@ async def play(room_id):
     # Life cycle hook for the client
     rooms.spawn_players(room_id)
     room = rooms.get_room(room_id)
-    await sio.emit('start_game', rooms.room_to_list(room_id))
+    await sio.emit('start_game', rooms.room_to_list(room_id), room=room_id)
 
     while True:
         players_in_room = rooms.room_to_list(room_id)
@@ -108,20 +108,19 @@ async def play(room_id):
 
         if len(alive_players) == 1:
             # Some dude won.
-            await sio.emit("winner", [alive_players[0]])
-            break
+            return [alive_players[0]]
         elif len(alive_players) == 0:
             # It was a tie.
-            await sio.emit("winner", prev_alive_players)
-            break
+            return prev_alive_players
 
 # Creates a game for a given room
 async def new_game(room_id):
     await search_for_players(room_id)
-    await play(room_id)
+    winners = await play(room_id)
 
     # Life cycle hook for client
-    await sio.emit('game over')
+    await sio.emit('game_over', winners, room=room_id)
+
     print("All players left room %s." % room_id)
     rooms.destroy_room(room_id)
 
