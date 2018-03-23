@@ -1,10 +1,12 @@
-# Measured in blocks
-window = { 'height': 50, 'width': 50 }
+# Window Dimensions.
+grid_w, grid_h = 50, 50
+
+# A buffer for how far away from the edge should players spawn.
 spawn_padding = 4
 
 # How big the client should render the blocks
 # should measure in viewports maybe???
-block_scale = 10
+grid = 10
 
 # Measured in snakes
 max_players = 2
@@ -47,8 +49,9 @@ player_colors = [
 # Settings to be deliver to the client in a form
 # thats easily translatable to javascript
 def get_as_obj():
-    global window
+    global grid_w, grid_h, grid
     return {
-        'window': window,
-        'block_scale': block_scale
+        'grid_w': grid_w,
+        'grid_h': grid_h,
+        'grid': grid
     }

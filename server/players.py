@@ -15,11 +15,10 @@ def create_player(player_count, dir = 'left'):
 
 # Figures out starting positions in a variable manner.
 def calc_player_spawn_coords(num_of_players):
-    window = settings.window
     sp = settings.spawn_padding
 
-    spawn_w = window['width']  - sp * 2
-    spawn_h = window['height'] - sp * 2
+    spawn_w = settings.grid_w - sp * 2
+    spawn_h = settings.grid_h - sp * 2
 
     # Figure out how many rows and columns for each row.
     row_len = max(1, math.ceil(math.sqrt(num_of_players)))
@@ -75,13 +74,13 @@ def check_out_of_bounds(player):
 
     x_lower_bound = 0
     y_lower_bound = 0
-    x_upper_bound = settings.window['width']
-    y_upper_bound = settings.window['height']
+    x_upper_bound = settings.grid_w
+    y_upper_bound = settings.grid_h
 
     # Use >= for the upperbound otherwise the player stops a block later
     # than for the lower bound
-    if (x <= x_lower_bound or x >= x_upper_bound or
-        y <= y_lower_bound or y >= y_upper_bound):
+    if (x <= x_lower_bound or x > x_upper_bound or
+        y <= y_lower_bound or y > y_upper_bound):
         player['alive'] = False
 
 def should_update(player):

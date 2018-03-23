@@ -26,10 +26,10 @@ export default {
       this.$socket.emit('enter_room')
     },
     init_settings(settings) {
-		this.grid_w = settings.window.width;
-		this.grid_h = settings.window.height;
-		console.log("grid w: ", this.grid_w);
-		console.log("grid h: ", this.grid_h);
+		// consistent naming :)
+		this.grid   = settings.grid;
+		this.grid_w = settings.grid_w;
+		this.grid_h = settings.grid_h;
 
 		this.win_w = this.grid_w * this.grid;
 		this.win_h = this.grid_h * this.grid;
@@ -42,7 +42,7 @@ export default {
 		  let c_pl = this.canv_players[pl["num"]];
 		  // Don't need to draw a line if not alive.
 		  if (pl["alive"]) {
-			 c_pl["path"].lineTo(pl.x*this.grid, pl.y*this.grid)
+			 c_pl["path"].lineTo(this.grid_to_win(pl.x), this.grid_to_win(pl.y));
 		  }
 		});
 
@@ -56,7 +56,7 @@ export default {
 		players.forEach(pl => {
 		  let c_pl = {};
 		  let path = new Path2D();
-		  path.moveTo(pl.x*this.grid, pl.y*this.grid);
+		  path.moveTo(this.grid_to_win(pl.x), this.grid_to_win(pl.y));
 
 		  c_pl["path"] = path;
 		  c_pl["color"] = pl["color"];
@@ -67,6 +67,9 @@ export default {
     }
   },
   methods: {
+	 grid_to_win(c) {
+		return c * this.grid-this.grid/2;
+	 },
 	 draw_grid() {
 		this.ctx.save();
 
@@ -77,7 +80,7 @@ export default {
 
 		this.ctx.beginPath();
 		for (let i = 0; i < this.grid_w; i++) {
-		  let x = i * this.grid + this.grid/2;
+		  let x = i * this.grid;
 		  this.ctx.moveTo(x, 0);
 		  this.ctx.lineTo(x, this.win_h);
 		}
@@ -86,7 +89,7 @@ export default {
 
 		this.ctx.beginPath();
 		for (let i = 0; i < this.grid_h; i++) {
-		  let y = i * this.grid + this.grid/2;
+		  let y = i * this.grid;
 		  this.ctx.moveTo(0,          y);
 		  this.ctx.lineTo(this.win_w, y);
 		}
