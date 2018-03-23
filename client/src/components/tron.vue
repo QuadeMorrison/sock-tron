@@ -13,7 +13,7 @@ export default {
   data () {
     return { 
       ctx: null,
-      canvas: null,
+		canv_players: [],
       pl_x: 0,
       pl_y: 0,
       background: 'black',
@@ -39,13 +39,17 @@ export default {
       this.player = {}
       this.player.width = 10
       this.player.height = 10
+		this.canv_players.push(new Path2D())
       this.ctx = this.$refs.game_window.getContext("2d")
-		this.draw_loop();
     },
     update_players(players) {
-      // In the future, we don't want drawing events here, to make it nice and smooth.
+		// Because I'm testing something fancy!
+		let canv_pl = this.canv_players[0]
+		let pl = players[0]
+		canv_pl.lineTo(pl.x*10, pl.y*10);
 
-      this.draw_players(players)
+		this.draw_loop(players);
+      this.draw_players_all_other_players(players)
     }
   },
   methods: {
@@ -54,9 +58,8 @@ export default {
 	 },
 	 animation_loop() {
 
-
 	 },
-	 draw_loop() {
+	 draw_loop(players) {
 		this.ctx.save();
 		this.ctx.clearRect(0, 0, this.window.width, this.window.height);
 
@@ -71,19 +74,14 @@ export default {
 		this.ctx.lineJoin = 'round';
 		this.ctx.lineWidth = this.player.width;
 
-		var tron = new Path2D();
-		tron.moveTo(20, 100);
-		tron.lineTo(90, 100);
-		tron.lineTo(90, 70);
-		tron.lineTo(120, 70);
-		tron.lineTo(120, 60);
-		tron.lineTo(30, 60);
-
-		// color
-		this.ctx.strokeStyle = 'red'
-
 		// draw it!
-		this.ctx.stroke(tron);
+		for (let i = 0; i < this.canv_players.length; i++) {
+        let pl = players[i]
+        let canv_pl = this.canv_players[i]
+		  // color
+		  this.ctx.strokeStyle = pl.color;
+		  this.ctx.stroke(canv_pl);
+		}
 
 		this.ctx.restore();
 	 },
@@ -91,8 +89,8 @@ export default {
       let key = keys[e.which]
       if (key) this.$socket.emit('keydown', key)
     },
-    draw_players(players) {
-      for (let i = 0; i < players.length; i++) {
+    draw_players_all_other_players(players) {
+      for (let i = 1; i < players.length; i++) {
         let pl = players[i]
         if (pl.alive) {
           this.ctx.fillStyle = pl.color
