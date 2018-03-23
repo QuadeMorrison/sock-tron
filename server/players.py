@@ -16,10 +16,10 @@ def create_player(player_count, dir = 'left'):
 # Figures out starting positions in a variable manner.
 def calc_player_spawn_coords(num_of_players):
     window = settings.window
-    window_padding = settings.window_padding
+    sp = settings.spawn_padding
 
-    spawn_w = window['width']  - window_padding * 2
-    spawn_h = window['height'] - window_padding * 2
+    spawn_w = window['width']  - sp * 2
+    spawn_h = window['height'] - sp * 2
 
     # Figure out how many rows and columns for each row.
     row_len = max(1, math.ceil(math.sqrt(num_of_players)))
@@ -37,8 +37,8 @@ def calc_player_spawn_coords(num_of_players):
 
     for i, col_len in enumerate(column_list):
         for j in range(col_len):
-            x = math.floor(j*spawn_w / col_len + spawn_w / (2*col_len) + window_padding)
-            y = math.floor(i*spawn_h / row_len + spawn_h / (2*row_len) + window_padding)
+            x = math.floor(j*spawn_w / col_len + spawn_w / (2*col_len) + sp)
+            y = math.floor(i*spawn_h / row_len + spawn_h / (2*row_len) + sp)
 
             coords.append( (x, y) )
 

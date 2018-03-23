@@ -1,6 +1,6 @@
 # Measured in blocks
 window = { 'height': 50, 'width': 50 }
-window_padding = 1
+spawn_padding = 4
 
 # How big the client should render the blocks
 # should measure in viewports maybe???
