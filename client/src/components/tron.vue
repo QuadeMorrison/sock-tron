@@ -28,6 +28,8 @@ export default {
     init_settings(settings) {
 		this.grid_w = settings.window.width;
 		this.grid_h = settings.window.height;
+		console.log("grid w: ", this.grid_w);
+		console.log("grid h: ", this.grid_h);
 
 		this.win_w = this.grid_w * this.grid;
 		this.win_h = this.grid_h * this.grid;
@@ -44,6 +46,8 @@ export default {
 		  }
 		});
 
+		this.draw_reset();
+		this.draw_grid();
 		this.draw_loop(players);
     },
     start_game(players) {
@@ -64,18 +68,46 @@ export default {
   },
   methods: {
 	 draw_grid() {
-		
+		this.ctx.save();
 
+		this.ctx.strokeStyle = "rgba(100, 100, 100, .2)";
+		//this.ctx.setLineDash([5, 2.5]);
+		//this.ctx.lineDashOffset = 5;
+		this.ctx.lineWidth = 2;
+
+		this.ctx.beginPath();
+		for (let i = 0; i < this.grid_w; i++) {
+		  let x = i * this.grid + this.grid/2;
+		  this.ctx.moveTo(x, 0);
+		  this.ctx.lineTo(x, this.win_h);
+		}
+		this.ctx.closePath();
+		this.ctx.stroke();
+
+		this.ctx.beginPath();
+		for (let i = 0; i < this.grid_h; i++) {
+		  let y = i * this.grid + this.grid/2;
+		  this.ctx.moveTo(0,          y);
+		  this.ctx.lineTo(this.win_w, y);
+		}
+		this.ctx.closePath();
+		this.ctx.stroke();
+
+		this.ctx.restore();
+	 },
+	 draw_reset() {
+		this.ctx.save();
+		this.ctx.clearRect(0, 0, this.win_w, this.win_h);
+		this.ctx.restore();
 	 },
 	 draw_loop(players) {
 		this.ctx.save();
-		this.ctx.clearRect(0, 0, this.win_w, this.win_h);
 
 		// shadow
-		this.ctx.shadowOffsetX = 1;
-		this.ctx.shadowOffsetY = 1;
-		this.ctx.shadowBlur = 5;
-		this.ctx.shadowColor = 'black';
+		this.ctx.shadowOffsetX = 0;
+		this.ctx.shadowOffsetY = 0;
+		this.ctx.shadowBlur = 3;
+		this.ctx.shadowColor = '#000';
 
 		// line style
 		this.ctx.lineCap = 'round';

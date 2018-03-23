@@ -73,15 +73,15 @@ def check_out_of_bounds(player):
     x = player['x']
     y = player['y']
 
-    x_upper_bound = settings.window['width'] - settings.window_padding
-    x_lower_bound = 0 + settings.window_padding
-    y_upper_bound = settings.window['height'] - settings.window_padding
-    y_lower_bound = 0 + settings.window_padding
+    x_lower_bound = 0
+    y_lower_bound = 0
+    x_upper_bound = settings.window['width']
+    y_upper_bound = settings.window['height']
 
     # Use >= for the upperbound otherwise the player stops a block later
     # than for the lower bound
-    if (x < x_lower_bound or x >= x_upper_bound or
-        y < y_lower_bound or y >= y_upper_bound):
+    if (x <= x_lower_bound or x >= x_upper_bound or
+        y <= y_lower_bound or y >= y_upper_bound):
         player['alive'] = False
 
 def should_update(player):
