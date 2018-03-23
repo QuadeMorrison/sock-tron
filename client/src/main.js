@@ -5,7 +5,11 @@ import App from './App'
 import router from './router'
 import VueSocketio from 'vue-socket.io';
 
-Vue.use(VueSocketio, 'http://0.0.0.0:8888');
+// This one for Development
+// Vue.use(VueSocketio, 'http://0.0.0.0:8888');
+
+// This one for Production.
+Vue.use(VueSocketio, 'http://138.68.59.8:8888');
 
 Vue.config.productionTip = false
 
