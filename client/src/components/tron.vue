@@ -17,7 +17,7 @@ export default {
 		grid_w: 0, grid_h: 0,
 		win_w: 500,  win_h: 500,
 		grid: 10,  pl_dim: 8,
-		FPS: 60
+		FPS: 60, win_list: null
     }
   },
   sockets: {
@@ -26,6 +26,9 @@ export default {
       // Mainly just for testing, enter the main room when you connect.
       this.$socket.emit('enter_room')
     },
+	 winner(players) {
+		this.win_list = players;
+	 },
     init_settings(settings) {
 		// consistent naming :)
 		this.grid   = settings.grid;
@@ -73,10 +76,34 @@ export default {
 		this.draw_reset();
 		this.draw_grid();
 		this.draw_players();
-		this.draw_win();
+		if (this.win_list != null) { this.draw_win(); }
 	 },
 	 draw_win() {
+		this.ctx.save();
+		this.ctx.font = '60px sans-serif';
 
+		// First, get the length.
+		let color = "white";
+		let end_text = " Wins!";
+		if (this.win_list.length > 1) {
+		  end_text = " Win!";
+		} else {
+		  color = this.win_list[0]["color"];
+		}
+
+		let name_list = this.win_list.map((pl) => pl.num)
+		let text = name_list.join(" & ") + end_text;
+		let tm = this.ctx.measureText(text);
+		let tx = this.win_w/2 - tm.width/2;
+
+		this.ctx.shadowOffsetX = 0;
+		this.ctx.shadowOffsetY = 0;
+		this.ctx.shadowBlur = 10;
+		this.ctx.shadowColor = 'black';
+		this.ctx.fillStyle = color;
+
+		this.ctx.fillText(text, tx, this.win_h/2);
+		this.ctx.restore();
 	 },
 	 draw_grid() {
 		this.ctx.save();

@@ -90,6 +90,11 @@ async def play(room_id):
 
         # Collision detection is built into move
         # We need to check for collision before we mark locations on the grid
+        alive_func = lambda pl: pl['alive']
+
+        # for ties.
+        prev_alive_players = list(filter(alive_func, players_in_room))
+
         for player in players_in_room:
             if players.should_update(player): players.move(room_id, player)
 
@@ -99,24 +104,15 @@ async def play(room_id):
         await asyncio.sleep(settings.snake_speed)
         await sio.emit('update_players', players_in_room, room=room_id)
 
-        # If everyone leaves the room, we don't need this thread anymore.
-        leave = True
+        alive_players = list(filter(alive_func, players_in_room))
 
-        # Stop the game if only 1 player is alive
-        num_alive = 0
-
-        for player in players_in_room:
-            if player['alive']:
-                leave = False
-                num_alive = num_alive + 1
-            #else:
-                #await sio.emit("died", player)
-
-        if num_alive == 1:
-            await sio.emit("winner", player)
-            leave = True
-
-        if leave or len(room) <= 0:
+        if len(alive_players) == 1:
+            # Some dude won.
+            await sio.emit("winner", [alive_players[0]])
+            break
+        elif len(alive_players) == 0:
+            # It was a tie.
+            await sio.emit("winner", prev_alive_players)
             break
 
 # Creates a game for a given room
