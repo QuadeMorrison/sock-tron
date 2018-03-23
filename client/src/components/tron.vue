@@ -15,8 +15,9 @@ export default {
       ctx: null,
 		canv_players: [],
 		grid_w: 0, grid_h: 0,
-		win_w: 0,  win_h: 0,
+		win_w: 500,  win_h: 500,
 		grid: 10,  pl_dim: 8,
+		FPS: 60
     }
   },
   sockets: {
@@ -35,6 +36,8 @@ export default {
 		this.win_h = this.grid_h * this.grid;
 
       this.ctx = this.$refs.game_window.getContext("2d")
+
+		window.setInterval(this.draw, 1000 / this.FPS);
     },
     update_players(players) {
 		// Add the new point to the path.
@@ -45,10 +48,6 @@ export default {
 			 c_pl["path"].lineTo(this.grid_to_win(pl.x), this.grid_to_win(pl.y));
 		  }
 		});
-
-		this.draw_reset();
-		this.draw_grid();
-		this.draw_loop(players);
     },
     start_game(players) {
 		console.log("PL: ", players);
@@ -69,6 +68,15 @@ export default {
   methods: {
 	 grid_to_win(c) {
 		return c * this.grid-this.grid/2;
+	 },
+	 draw() {
+		this.draw_reset();
+		this.draw_grid();
+		this.draw_players();
+		this.draw_win();
+	 },
+	 draw_win() {
+
 	 },
 	 draw_grid() {
 		this.ctx.save();
@@ -103,7 +111,7 @@ export default {
 		this.ctx.clearRect(0, 0, this.win_w, this.win_h);
 		this.ctx.restore();
 	 },
-	 draw_loop(players) {
+	 draw_players() {
 		this.ctx.save();
 
 		// shadow

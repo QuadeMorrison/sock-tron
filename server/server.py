@@ -43,7 +43,7 @@ def exit_match(sid):
     room_id = rooms.sid_to_room_id(sid)
     sio.leave_room(sid, room_id)
 
-@sio.on('leave room')
+@sio.on('leave_room')
 async def leave_room(sid, data):
     exit_match(sid)
 
