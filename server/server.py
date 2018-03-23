@@ -1,3 +1,4 @@
+#!/usr/env python3
 from aiohttp import web
 import socketio
 import asyncio
