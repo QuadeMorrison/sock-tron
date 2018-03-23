@@ -24,11 +24,8 @@ export default {
   sockets: {
     connect() {
       console.log("Connected to server")
-      if (this.context) {
-        //this.context.clearRect(0, 0, this.window.width, this.window.height);
-      }
       // Mainly just for testing, enter the main room when you connect.
-      this.$socket.emit('enter_room', "main_room")
+      this.$socket.emit('enter_room')
     },
     init_settings(settings) {
       this.window = settings.window

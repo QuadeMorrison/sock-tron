@@ -2,11 +2,10 @@ from aiohttp import web
 import socketio
 import asyncio
 import settings
+import players
+import grid
 import rooms
 import sys
-
-# Important.
-# Right now, only room_main works, but you can add new rooms.
 
 # Taken from: https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python
 def eprint(*args, **kwargs):
@@ -18,31 +17,27 @@ sio = socketio.AsyncServer()
 async def connect(sid, environ):
     # What does await emit do, does it wait for a verification to come from the
     # client? If not, then that await is pointless, right?
-    await sio.emit('init_settings', settings.get_settings_obj())
+    await sio.emit('init_settings', settings.get_as_obj())
     print('Connected', sid)
 
-# Room test
+# Add client to a room
 @sio.on('enter_room')
-def enter_room(sid, room_id):
-    print(sid, "is entering room", room_id)
-
+def enter_room(sid):
     # Join room
-    is_new_room = rooms.assign_room(sid, room_id)
+    is_new_room, room_id = rooms.assign_room(sid)
 
-    # Spawn
-    rooms.spawn_players(room_id)
-
-    # Update will work.
+    # Connect sid to room so events emitted to clients in
+    # the room are emitted to the socket with sid
     sio.enter_room(sid, room_id)
 
     # Wanna create a new room if there is a new one!
-    if not is_new_room:
+    if is_new_room:
         print("Starting match with room", room_id)
-        sio.start_background_task(update_players, room_id)
+        sio.start_background_task(new_game, room_id)
 
 def exit_match(sid):
-    pl = rooms.get_player(sid)
-    pl['alive'] = False
+    player = rooms.get_player(sid)
+    player['alive'] = False
 
     print(sid, "Leaving room")
     room_id = rooms.sid_to_room_id(sid)
@@ -59,45 +54,79 @@ async def disconnect(sid):
 @sio.on('keydown')
 async def keydown(sid, key):
     room_id = rooms.sid_to_room_id(sid)
-    pl = rooms.get_player(sid)
-    prev_key = pl['dir']
-    if (not (key == 'left'  and prev_key == 'right') and
-        not (key == 'right' and prev_key == 'left')  and
-        not (key == 'up'    and prev_key == 'down')  and
-        not (key == 'down'  and prev_key == 'up')):
-        pl['dir'] = key
-        # print("%s: Turned %s." % (sid, key))
+    player = rooms.get_player(sid)
 
-# This function can assume just one room.
-async def update_players(room_ind):
-    room = rooms.get_room(room_ind)
+    if player: players.change_dir(player, key)
+
+async def search_for_players(room_id):
+    # Life cycle hook for the client
+    await sio.emit('searching_for_players') 
+    room = rooms.get_room(room_id)
+
+    # Wait forever until we have enough players to start
+    while len(room) > 0:
+        await asyncio.sleep(settings.polling_rate)
+
+        if len(room) >= settings.min_players:
+            for i in range(settings.time_to_start_game):
+                await sio.emit('game_starts_in', settings.time_to_start_game - i)
+                await asyncio.sleep(1)
+
+                # we don't have enough players go back to searching
+                if len(room) < settings.min_players: break
+
+            # The game is ready to start
+            if i == settings.time_to_start_game - 1: break
+
+async def play(room_id):
+    # Life cycle hook for the client
+    await sio.emit('start_game')
+    rooms.spawn_players(room_id)
+    room = rooms.get_room(room_id)
 
     while True:
-        for k, v in room.items():
-            dir = v['dir']
-            dimension = "x" if (dir == "left" or dir == "right") else "y"
-            move_by = 1 if (dir == "right" or dir == "down") else -1
-            axis = "x" if (dimension == "x") else "y"
+        players_in_room = rooms.room_to_list(room_id)
 
-            v[axis] += move_by
+        # Collision detection is built into move
+        # We need to check for collision before we mark locations on the grid
+        for player in players_in_room:
+            if players.should_update(player): players.move(room_id, player)
 
-        # Don't want to emit the sid of each client.
-        emitted_list = rooms.room_to_list(room_ind)
-        await asyncio.sleep(0.1)
-        await sio.emit('update_players', emitted_list, room="main_room")
+        for player in players_in_room:
+            if players.should_update(player): grid.mark_loc(room_id, player['x'], player['y'])
+
+        await asyncio.sleep(settings.snake_speed)
+        await sio.emit('update_players', players_in_room, room=room_id)
 
         # If everyone leaves the room, we don't need this thread anymore.
-        leave = False
-        for k, pl in room.items():
-            if pl['alive']:
+        leave = True
+
+        # Stop the game if only 1 player is alive
+        num_alive = 0
+
+        for player in players_in_room:
+            if player['alive']:
                 leave = False
-                break
+                num_alive = num_alive + 1
+            #else:
+                #await sio.emit("died", player)
+
+        if num_alive == 1:
+            await sio.emit("winner", player)
+            leave = True
 
         if leave or len(room) <= 0:
             break
 
-    print("All players left room %d." % room_ind)
-    rooms.destroy_room(room_ind)
+# Creates a game for a given room
+async def new_game(room_id):
+    await search_for_players(room_id)
+    await play(room_id)
+
+    # Life cycle hook for client
+    await sio.emit('game over')
+    print("All players left room %s." % room_id)
+    rooms.destroy_room(room_id)
 
 if __name__ == '__main__':
     app = web.Application()
