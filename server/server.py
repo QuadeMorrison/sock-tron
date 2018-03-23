@@ -37,7 +37,8 @@ def enter_room(sid):
 
 def exit_match(sid):
     player = rooms.get_player(sid)
-    player['alive'] = False
+    if player != None:
+        player['alive'] = False
 
     print(sid, "Leaving room")
     room_id = rooms.sid_to_room_id(sid)
