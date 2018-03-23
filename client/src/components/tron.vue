@@ -1,7 +1,7 @@
 <template lang="pug">
   div
-    canvas#game_window(:width=`this.window.width + "px"` 
-                     :height=`this.window.height + "px"` 
+    canvas#game_window(:width=`this.win_w + "px"` 
+                     :height=`this.win_h + "px"` 
                      ref="game_window")
 </template>
 
@@ -14,12 +14,9 @@ export default {
     return { 
       ctx: null,
 		canv_players: [],
-      pl_x: 0,
-      pl_y: 0,
-      background: 'black',
-      num: 0,
-      window: { height: 500, width: 500 },
-      player: { height: 10, width: 10 }
+		grid_w: 0, grid_h: 0,
+		win_w: 0,  win_h: 0,
+		grid: 10,  pl_dim: 8,
     }
   },
   sockets: {
@@ -29,36 +26,50 @@ export default {
       this.$socket.emit('enter_room')
     },
     init_settings(settings) {
-      this.window = settings.window
-      this.window.width *= 10
-      this.window.height *= 10
+		this.grid_w = settings.window.width;
+		this.grid_h = settings.window.height;
 
-      this.player = {}
-      this.player.width = 10
-      this.player.height = 10
-		this.canv_players.push(new Path2D())
+		this.win_w = this.grid_w * this.grid;
+		this.win_h = this.grid_h * this.grid;
+
       this.ctx = this.$refs.game_window.getContext("2d")
     },
     update_players(players) {
-		// Because I'm testing something fancy!
-		let canv_pl = this.canv_players[0]
-		let pl = players[0]
-		canv_pl.lineTo(pl.x*10, pl.y*10);
+		// Add the new point to the path.
+		players.forEach(pl => {
+		  let c_pl = this.canv_players[pl["num"]];
+		  // Don't need to draw a line if not alive.
+		  if (pl["alive"]) {
+			 c_pl["path"].lineTo(pl.x*this.grid, pl.y*this.grid)
+		  }
+		});
 
 		this.draw_loop(players);
-      this.draw_players_all_other_players(players)
+    },
+    start_game(players) {
+		console.log("PL: ", players);
+
+		players.forEach(pl => {
+		  let c_pl = {};
+		  let path = new Path2D();
+		  path.moveTo(pl.x*this.grid, pl.y*this.grid);
+
+		  c_pl["path"] = path;
+		  c_pl["color"] = pl["color"];
+		  this.canv_players[pl["num"]] = c_pl;
+		});
+
+		console.log("players: ", this.canv_players);
     }
   },
   methods: {
-	 init_draw() {
-
-	 },
-	 animation_loop() {
+	 draw_grid() {
+		
 
 	 },
 	 draw_loop(players) {
 		this.ctx.save();
-		this.ctx.clearRect(0, 0, this.window.width, this.window.height);
+		this.ctx.clearRect(0, 0, this.win_w, this.win_h);
 
 		// shadow
 		this.ctx.shadowOffsetX = 1;
@@ -68,17 +79,14 @@ export default {
 
 		// line style
 		this.ctx.lineCap = 'round';
-		this.ctx.lineJoin = 'round';
-		this.ctx.lineWidth = this.player.width;
+		this.ctx.lineJoin = 'miter';
+		this.ctx.lineWidth = this.pl_dim; // was:   this.player.width;
 
 		// draw it!
-		for (let i = 0; i < this.canv_players.length; i++) {
-        let pl = players[i]
-        let canv_pl = this.canv_players[i]
-		  // color
-		  this.ctx.strokeStyle = pl.color;
-		  this.ctx.stroke(canv_pl);
-		}
+		this.canv_players.forEach((pl) => {
+		  this.ctx.strokeStyle = pl["color"];
+		  this.ctx.stroke(pl["path"]);
+		});
 
 		this.ctx.restore();
 	 },
@@ -86,18 +94,6 @@ export default {
       let key = keys[e.which]
       if (key) this.$socket.emit('keydown', key)
     },
-    draw_players_all_other_players(players) {
-      for (let i = 1; i < players.length; i++) {
-        let pl = players[i]
-        if (pl.alive) {
-          this.ctx.fillStyle = pl.color
-          this.ctx.fillRect(pl.x*10, pl.y*10, this.player.height, this.player.width)
-        }
-      }
-
-      // I'm keeping this line for reference. I always forget my javascript.
-      // Object.keys(this.position).forEach(x => { if (!isNaN(x)) { this.position[x].forEach(y => { }) } })
-    }
   },
   mounted() {
     // Vue's keydown event only really works for input elements

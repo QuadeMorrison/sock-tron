@@ -80,9 +80,9 @@ async def search_for_players(room_id):
 
 async def play(room_id):
     # Life cycle hook for the client
-    await sio.emit('start_game')
     rooms.spawn_players(room_id)
     room = rooms.get_room(room_id)
+    await sio.emit('start_game', rooms.room_to_list(room_id))
 
     while True:
         players_in_room = rooms.room_to_list(room_id)
