@@ -9,7 +9,7 @@ spawn_padding = 4
 grid = 10
 
 # Measured in snakes
-max_players = 4
+max_players = 10
 
 # Start the countdown once we atleast have
 # this many players
