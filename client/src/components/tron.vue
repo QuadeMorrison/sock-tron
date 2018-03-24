@@ -17,8 +17,14 @@ export default {
 		grid_w: 0, grid_h: 0,
 		win_w: 500,  win_h: 500,
 		grid: 10,  pl_dim: 8,
-		FPS: 60, win_list: null
+		win_list: null, FPS: 30,
+		count_down: 0, searching: false,
+		recv_delta: 0, last_time: (new Date()).getTime(),
+		delta_inc: 0, frame_delta: 0
     }
+  },
+  created: function() {
+	 window.setInterval(this.draw, 1000 / this.FPS)
   },
   sockets: {
     connect() {
@@ -28,9 +34,17 @@ export default {
     },
 	 game_over(players) {
 		this.win_list = players;
+		this.delta_inc = 0;
+		this.frame_delta = 0;
+		this.canv_players.forEach((c_pl) => {
+		  c_pl["path"].lineTo(c_pl.next_x, c_pl.next_y);
+		});
+	 },
+	 game_starts_in(count_down) {
+		this.count_down = count_down;
 	 },
     init_settings(settings) {
-		// consistent naming :)
+		// consistent naming
 		this.grid   = settings.grid;
 		this.grid_w = settings.grid_w;
 		this.grid_h = settings.grid_h;
@@ -39,33 +53,49 @@ export default {
 		this.win_h = this.grid_h * this.grid;
 
       this.ctx = this.$refs.game_window.getContext("2d")
-
-		window.setInterval(this.draw, 1000 / this.FPS);
     },
     update_players(players) {
+		// Figure out time difference.
+		let cur_time = (new Date()).getTime();
+		this.recv_delta = cur_time - this.last_time;
+		this.delta_inc = 1000 / this.FPS / this.recv_delta;
+		this.frame_delta = 0;
+		this.last_time = cur_time;
+
 		// Add the new point to the path.
 		players.forEach(pl => {
 		  let c_pl = this.canv_players[pl["num"]];
 		  // Don't need to draw a line if not alive.
 		  if (pl["alive"]) {
-			 c_pl["path"].lineTo(this.grid_to_win(pl.x), this.grid_to_win(pl.y));
+			 c_pl.cur_x = c_pl.next_x;
+			 c_pl.cur_y = c_pl.next_y;
+			 c_pl["path"].lineTo(c_pl.next_x, c_pl.next_y);
+			 c_pl.next_x = this.grid_to_win(pl.x);
+			 c_pl.next_y = this.grid_to_win(pl.y);
 		  }
 		});
     },
+	 searching_for_players() {
+		this.searching = true;
+	 },
     start_game(players) {
-		console.log("PL: ", players);
+		this.count_down = 0;
+		this.searching = false;
 
 		players.forEach(pl => {
 		  let c_pl = {};
-		  let path = new Path2D();
-		  path.moveTo(this.grid_to_win(pl.x), this.grid_to_win(pl.y));
+		  c_pl.color = pl["color"];
+		  c_pl.next_x = this.grid_to_win(pl.x);
+		  c_pl.next_y = this.grid_to_win(pl.y);
+		  c_pl.cur_x = c_pl.next_x;
+		  c_pl.cur_y = c_pl.next_y;
 
-		  c_pl["path"] = path;
-		  c_pl["color"] = pl["color"];
+		  let path = new Path2D();
+		  path.moveTo(c_pl.next_x, c_pl.next_y);
+		  c_pl.path = path;
+
 		  this.canv_players[pl["num"]] = c_pl;
 		});
-
-		console.log("players: ", this.canv_players);
     }
   },
   methods: {
@@ -76,23 +106,19 @@ export default {
 		this.draw_reset();
 		this.draw_grid();
 		this.draw_players();
-		if (this.win_list != null) { this.draw_win(); }
+		if (this.count_down > 0) { this.draw_count_down(); }
+		else if (this.win_list != null) { this.draw_win(); }
+		else if (this.searching) { this.draw_text("Locating Socks..."); }
 	 },
-	 draw_win() {
-		this.ctx.save();
-		this.ctx.font = '60px sans-serif';
-
-		// First, get the length.
-		let color = "white";
-		let end_text = " Wins!";
-		if (this.win_list.length > 1) {
-		  end_text = " Win!";
-		} else {
-		  color = this.win_list[0]["color"];
+	 // Draws text centered.
+	 draw_text(text, color) {
+		if (!color) {
+		  color = "white";
 		}
+		let size = 60
+		this.ctx.save();
+		this.ctx.font = size + 'px sans-serif';
 
-		let name_list = this.win_list.map((pl) => pl.num)
-		let text = name_list.join(" & ") + end_text;
 		let tm = this.ctx.measureText(text);
 		let tx = this.win_w/2 - tm.width/2;
 
@@ -104,6 +130,23 @@ export default {
 
 		this.ctx.fillText(text, tx, this.win_h/2);
 		this.ctx.restore();
+	 },
+	 draw_count_down() {
+		this.draw_text(this.count_down.toString());
+	 },
+	 draw_win() {
+		// First, get the length.
+		let color = "white";
+		let end_text = " Wins!";
+		if (this.win_list.length > 1) {
+		  end_text = " Win!";
+		} else {
+		  color = this.win_list[0]["color"];
+		}
+
+		let name_list = this.win_list.map((pl) => pl.num)
+		let text = name_list.join(" & ") + end_text;
+		this.draw_text(text, color);
 	 },
 	 draw_grid() {
 		this.ctx.save();
@@ -155,8 +198,24 @@ export default {
 		// draw it!
 		this.canv_players.forEach((pl) => {
 		  this.ctx.strokeStyle = pl["color"];
-		  this.ctx.stroke(pl["path"]);
+		  let path = pl["path"]
+
+		  // If we are playing the game, then guess the next position.
+		  if (this.win_list == null) {
+			 console.log("test win list");
+			 path = new Path2D(path);
+			 let x = (pl.next_x - pl.cur_x)*this.frame_delta;
+			 let y = (pl.next_y - pl.cur_y)*this.frame_delta;
+		  
+			 path.lineTo(pl.cur_x + x, pl.cur_y + y)
+		  }
+		  this.ctx.stroke(path);
 		});
+		
+		this.frame_delta += this.delta_inc;
+		if (this.frame_delta > this.recv_delta) {
+		  this.frame_delta = this.recv_delta;
+		}
 
 		this.ctx.restore();
 	 },
