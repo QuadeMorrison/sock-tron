@@ -72,6 +72,7 @@ async def search_for_players(room_id):
         if len(room) >= settings.min_players:
             for i in range(settings.time_to_start_game):
                 await sio.emit('game_starts_in', settings.time_to_start_game - i)
+                print(settings.time_to_start_game);
                 await asyncio.sleep(1)
 
                 # we don't have enough players go back to searching

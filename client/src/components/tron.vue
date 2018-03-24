@@ -17,7 +17,8 @@ export default {
 		grid_w: 0, grid_h: 0,
 		win_w: 500,  win_h: 500,
 		grid: 10,  pl_dim: 8,
-		FPS: 60, win_list: null
+		FPS: 60, win_list: null,
+		count_down: 0, searching: false
     }
   },
   sockets: {
@@ -29,8 +30,11 @@ export default {
 	 game_over(players) {
 		this.win_list = players;
 	 },
+	 game_starts_in(count_down) {
+		this.count_down = count_down;
+	 },
     init_settings(settings) {
-		// consistent naming :)
+		// consistent naming
 		this.grid   = settings.grid;
 		this.grid_w = settings.grid_w;
 		this.grid_h = settings.grid_h;
@@ -52,8 +56,12 @@ export default {
 		  }
 		});
     },
+	 searching_for_players() {
+		this.searching = true;
+	 },
     start_game(players) {
-		console.log("PL: ", players);
+		this.count_down = 0;
+		this.searching = false;
 
 		players.forEach(pl => {
 		  let c_pl = {};
@@ -64,8 +72,6 @@ export default {
 		  c_pl["color"] = pl["color"];
 		  this.canv_players[pl["num"]] = c_pl;
 		});
-
-		console.log("players: ", this.canv_players);
     }
   },
   methods: {
@@ -76,23 +82,19 @@ export default {
 		this.draw_reset();
 		this.draw_grid();
 		this.draw_players();
-		if (this.win_list != null) { this.draw_win(); }
+		if (this.count_down > 0) { this.draw_count_down(); }
+		else if (this.win_list != null) { this.draw_win(); }
+		else if (this.searching) { this.draw_text("Locating Socks..."); }
 	 },
-	 draw_win() {
-		this.ctx.save();
-		this.ctx.font = '60px sans-serif';
-
-		// First, get the length.
-		let color = "white";
-		let end_text = " Wins!";
-		if (this.win_list.length > 1) {
-		  end_text = " Win!";
-		} else {
-		  color = this.win_list[0]["color"];
+	 // Draws text centered.
+	 draw_text(text, color) {
+		if (!color) {
+		  color = "white";
 		}
+		let size = 60
+		this.ctx.save();
+		this.ctx.font = size + 'px sans-serif';
 
-		let name_list = this.win_list.map((pl) => pl.num)
-		let text = name_list.join(" & ") + end_text;
 		let tm = this.ctx.measureText(text);
 		let tx = this.win_w/2 - tm.width/2;
 
@@ -104,6 +106,23 @@ export default {
 
 		this.ctx.fillText(text, tx, this.win_h/2);
 		this.ctx.restore();
+	 },
+	 draw_count_down() {
+		this.draw_text(this.count_down.toString());
+	 },
+	 draw_win() {
+		// First, get the length.
+		let color = "white";
+		let end_text = " Wins!";
+		if (this.win_list.length > 1) {
+		  end_text = " Win!";
+		} else {
+		  color = this.win_list[0]["color"];
+		}
+
+		let name_list = this.win_list.map((pl) => pl.num)
+		let text = name_list.join(" & ") + end_text;
+		this.draw_text(text, color);
 	 },
 	 draw_grid() {
 		this.ctx.save();
