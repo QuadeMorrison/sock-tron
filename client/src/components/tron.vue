@@ -36,9 +36,6 @@ export default {
 		this.win_list = players;
 		this.delta_inc = 0;
 		this.frame_delta = 0;
-		this.canv_players.forEach((c_pl) => {
-		  c_pl["path"].lineTo(c_pl.next_x, c_pl.next_y);
-		});
 	 },
 	 game_starts_in(count_down) {
 		this.count_down = count_down;
@@ -65,14 +62,19 @@ export default {
 		// Add the new point to the path.
 		players.forEach(pl => {
 		  let c_pl = this.canv_players[pl["num"]];
+
 		  // Don't need to draw a line if not alive.
-		  if (pl["alive"]) {
+		  if (c_pl.alive) {
 			 c_pl.cur_x = c_pl.next_x;
 			 c_pl.cur_y = c_pl.next_y;
 			 c_pl["path"].lineTo(c_pl.next_x, c_pl.next_y);
 			 c_pl.next_x = this.grid_to_win(pl.x);
 			 c_pl.next_y = this.grid_to_win(pl.y);
+		  } else {
+			 
 		  }
+
+		  c_pl.alive = pl["alive"]
 		});
     },
 	 searching_for_players() {
@@ -89,6 +91,7 @@ export default {
 		  c_pl.next_y = this.grid_to_win(pl.y);
 		  c_pl.cur_x = c_pl.next_x;
 		  c_pl.cur_y = c_pl.next_y;
+		  c_pl.alive = pl.alive
 
 		  let path = new Path2D();
 		  path.moveTo(c_pl.next_x, c_pl.next_y);
@@ -201,7 +204,8 @@ export default {
 		  let path = pl["path"]
 
 		  // If we are playing the game, then guess the next position.
-		  if (this.win_list == null) {
+		  console.log("my pl: ", pl);
+		  if (pl.alive && this.win_list == null) {
 			 console.log("test win list");
 			 path = new Path2D(path);
 			 let x = (pl.next_x - pl.cur_x)*this.frame_delta;
