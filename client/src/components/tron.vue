@@ -70,8 +70,6 @@ export default {
 			 c_pl["path"].lineTo(c_pl.next_x, c_pl.next_y);
 			 c_pl.next_x = this.grid_to_win(pl.x);
 			 c_pl.next_y = this.grid_to_win(pl.y);
-		  } else {
-			 
 		  }
 
 		  c_pl.alive = pl["alive"]
@@ -204,9 +202,7 @@ export default {
 		  let path = pl["path"]
 
 		  // If we are playing the game, then guess the next position.
-		  console.log("my pl: ", pl);
 		  if (pl.alive && this.win_list == null) {
-			 console.log("test win list");
 			 path = new Path2D(path);
 			 let x = (pl.next_x - pl.cur_x)*this.frame_delta;
 			 let y = (pl.next_y - pl.cur_y)*this.frame_delta;
@@ -217,9 +213,10 @@ export default {
 		});
 		
 		this.frame_delta += this.delta_inc;
-		if (this.frame_delta > this.recv_delta) {
-		  this.frame_delta = this.recv_delta;
+		if (this.frame_delta > 1) {
+		  this.frame_delta = 1
 		}
+		console.log(this.frame_delta, this.delta_inc, this.recv_delta)
 
 		this.ctx.restore();
 	 },
