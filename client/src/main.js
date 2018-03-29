@@ -9,7 +9,7 @@ import VueSocketio from 'vue-socket.io';
 // Vue.use(VueSocketio, 'http://0.0.0.0:8888');
 
 // This one for Production.
-Vue.use(VueSocketio, 'http://138.68.59.8:8888');
+Vue.use(VueSocketio, 'http://138.68.59.8:215');
 
 Vue.config.productionTip = false
 
