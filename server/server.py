@@ -63,22 +63,23 @@ async def keydown(sid, key):
 async def search_for_players(room_id):
     # Life cycle hook for the client
     await sio.emit('searching_for_players') 
-    room = rooms.get_room(room_id)
 
     # Wait forever until we have enough players to start
-    while len(room) > 0:
+    while len(rooms.get_alive_player(room_id)) > 0:
         await asyncio.sleep(settings.polling_rate)
-
-        if len(room) >= settings.min_players:
+        num_players = len(rooms.get_alive_players)
+        if num_players >= settings.min_players:
             for i in range(settings.time_to_start_game):
                 await sio.emit('game_starts_in', settings.time_to_start_game - i)
                 await asyncio.sleep(1)
 
                 # we don't have enough players go back to searching
-                if len(room) < settings.min_players: break
+                if num_players < settings.min_players: break
 
             # The game is ready to start
-            if i == settings.time_to_start_game - 1: break
+            if i == settings.time_to_start_game - 1:
+                rooms.mark_room_as_started(room_id)
+                break
 
 async def play(room_id):
     # Life cycle hook for the client
@@ -105,10 +106,10 @@ async def play(room_id):
         await asyncio.sleep(settings.snake_speed)
         await sio.emit('update_players', players_in_room, room=room_id)
 
-        alive_players = list(filter(alive_func, players_in_room))
+        alive_players = list(filter(lambda pl: pl['alive'], players_in_room))
 
         if len(alive_players) == 1:
-            # Some dude won.
+            # Some dude (the greatest of dudes) won.
             return [alive_players[0]]
         elif len(alive_players) == 0:
             # It was a tie.

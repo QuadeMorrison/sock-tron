@@ -17,7 +17,7 @@ export default {
 		grid_w: 0, grid_h: 0,
 		win_w: 500,  win_h: 500,
 		grid: 10,  pl_dim: 8,
-		FPS: 60, win_list: null
+		FPS: 60, win_list: null,
     }
   },
   sockets: {

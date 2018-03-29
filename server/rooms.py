@@ -6,6 +6,7 @@ import players
 _room_list = {}
 _sid_to_room_id = {}
 _current_room_to_assign = None
+_room_started = {}
 
 def get_room(room_id):
     global _room_list
@@ -24,7 +25,9 @@ def get_available_room_id():
     # Needs to check if room has started a game as well
     # Filter out dead players because players who leave the room before it
     # starts are marked dead
-    if not current_room or len(current_room) == settings.max_players:
+    if (not current_room or
+        len(current_room) == settings.max_players or
+        has_game_started(_current_room_to_assign)):
         _current_room_to_assign = gen_room_id()
 
     return _current_room_to_assign
@@ -90,6 +93,8 @@ def destroy_room(room_id):
         # don't associate the sid with the room anymore
         for sid, player in _room_list[room_id].items():
             _sid_to_room_id[sid] = None
+
+        _room_started[room_id] = None
         # Enforcing garbage collection I suppose.
         # Can't hurt to be safe :P, or can it?
         _room_list[room_id].clear()
@@ -105,9 +110,19 @@ def new_room(room_id):
     room = _room_list[room_id] = {}
     return room
 
+def mark_room_as_started(room_id):
+    _room_started[room_id] = True
+
+def has_game_started(room_id):
+    return room_id in _room_started
+
 def sid_to_room_id(sid):
     global _sid_to_room_id
     return _sid_to_room_id[sid]
+
+def get_alive_players(room_id):
+    room = get_room(room_id)
+    return list(filter(lambda player: player['alive'], room_to_list(room)))
 
 def get_player(sid):
     room_id = sid_to_room_id(sid)
