@@ -8,11 +8,15 @@ import grid
 import rooms
 import sys
 
-# Taken from: https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python
+
+# Taken from:
+# https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+
 sio = socketio.AsyncServer()
+
 
 @sio.on('connect')
 async def connect(sid, environ):
@@ -20,6 +24,7 @@ async def connect(sid, environ):
     # client? If not, then that await is pointless, right?
     await sio.emit('init_settings', settings.get_as_obj())
     print('Connected', sid)
+
 
 # Add client to a room
 @sio.on('enter_room')
@@ -36,55 +41,65 @@ def enter_room(sid):
         print("Starting match with room", room_id)
         sio.start_background_task(new_game, room_id)
 
+
 def exit_match(sid):
     player = rooms.get_player(sid)
-    if player != None:
+    if player is not None:
         player['alive'] = False
 
     print(sid, "Leaving room")
     room_id = rooms.sid_to_room_id(sid)
     sio.leave_room(sid, room_id)
 
+
 @sio.on('leave_room')
 async def leave_room(sid, data):
     exit_match(sid)
+
 
 @sio.on('disconnect')
 async def disconnect(sid):
     exit_match(sid)
 
+
 @sio.on('keydown')
 async def keydown(sid, key):
-    room_id = rooms.sid_to_room_id(sid)
     player = rooms.get_player(sid)
 
-    if player: players.change_dir(player, key)
+    if player:
+        players.change_dir(player, key)
+
 
 async def search_for_players(room_id):
     # Life cycle hook for the client
-    await sio.emit('searching_for_players') 
+    await sio.emit('searching_for_players')
 
     # Wait forever until we have enough players to start
-    while len(rooms.get_alive_player(room_id)) > 0:
+    while True:
         await asyncio.sleep(settings.polling_rate)
-        num_players = len(rooms.get_alive_players)
+        num_players = len(rooms.get_alive_players(room_id))
         if num_players >= settings.min_players:
             for i in range(settings.time_to_start_game):
-                await sio.emit('game_starts_in', settings.time_to_start_game - i)
+                count_down = settings.time_to_start_game - i
+                await sio.emit('game_starts_in', count_down)
                 await asyncio.sleep(1)
 
                 # we don't have enough players go back to searching
-                if num_players < settings.min_players: break
+                num_players_alive = len(rooms.get_alive_players(room_id))
+                if num_players_alive < settings.min_players:
+                    rooms.remove_dead_players(room_id)
+                    print("reseting search")
+                    break
 
             # The game is ready to start
             if i == settings.time_to_start_game - 1:
                 rooms.mark_room_as_started(room_id)
                 break
 
+
 async def play(room_id):
     # Life cycle hook for the client
     rooms.spawn_players(room_id)
-    room = rooms.get_room(room_id)
     await sio.emit('start_game', rooms.room_to_list(room_id), room=room_id)
 
     while True:
@@ -92,16 +107,18 @@ async def play(room_id):
 
         # Collision detection is built into move
         # We need to check for collision before we mark locations on the grid
-        alive_func = lambda pl: pl['alive']
+        def alive_func(pl): return pl['alive']
 
         # for ties.
         prev_alive_players = list(filter(alive_func, players_in_room))
 
         for player in players_in_room:
-            if players.should_update(player): players.move(room_id, player)
+            if players.should_update(player):
+                players.move(room_id, player)
 
         for player in players_in_room:
-            if players.should_update(player): grid.mark_loc(room_id, player['x'], player['y'])
+            if players.should_update(player):
+                grid.mark_loc(room_id, player['x'], player['y'])
 
         await asyncio.sleep(settings.snake_speed)
         await sio.emit('update_players', players_in_room, room=room_id)
@@ -114,6 +131,7 @@ async def play(room_id):
         elif len(alive_players) == 0:
             # It was a tie.
             return prev_alive_players
+
 
 # Creates a game for a given room
 async def new_game(room_id):
@@ -130,3 +148,4 @@ if __name__ == '__main__':
     app = web.Application()
     sio.attach(app)
     web.run_app(app, port=8888)
+

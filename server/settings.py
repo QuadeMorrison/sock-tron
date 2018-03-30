@@ -46,6 +46,7 @@ player_colors = [
     "#808000"
 ]
 
+
 # Settings to be deliver to the client in a form
 # thats easily translatable to javascript
 def get_as_obj():

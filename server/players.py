@@ -2,7 +2,8 @@ import settings
 import grid
 import math
 
-def create_player(player_count, dir = 'left'):
+
+def create_player(player_count, dir='left'):
     # The position is calculated when the match actually starts.
     return {
         'color': settings.player_colors[player_count % settings.max_players],
@@ -12,6 +13,7 @@ def create_player(player_count, dir = 'left'):
         'alive': True,
         'num': player_count + 1
     }
+
 
 # Figures out starting positions in a variable manner.
 def calc_player_spawn_coords(num_of_players):
@@ -39,20 +41,22 @@ def calc_player_spawn_coords(num_of_players):
             x = math.floor(j*spawn_w / col_len + spawn_w / (2*col_len) + sp)
             y = math.floor(i*spawn_h / row_len + spawn_h / (2*row_len) + sp)
 
-            coords.append( (x, y) )
+            coords.append((x, y))
 
     return coords
     print(coords)
 
-    return { 'color': "red", 'x': 0, 'y': 0 }
+    return {'color': "red", 'x': 0, 'y': 0}
+
 
 def change_dir(player, key):
     prev_key = player['dir']
-    if (not (key == 'left'  and prev_key == 'right') and
-        not (key == 'right' and prev_key == 'left')  and
-        not (key == 'up'    and prev_key == 'down')  and
-        not (key == 'down'  and prev_key == 'up')):
+    if (not (key == 'left' and prev_key == 'right') and
+        not (key == 'right' and prev_key == 'left') and
+        not (key == 'up' and prev_key == 'down') and
+            not (key == 'down' and prev_key == 'up')):
         player['dir'] = key
+
 
 def move(room_id, player):
     dir = player['dir']
@@ -64,9 +68,11 @@ def move(room_id, player):
     check_collision(room_id, player)
     check_out_of_bounds(player)
 
+
 def check_collision(room_id, player):
     if (grid.is_marked(room_id, player['x'], player['y'])):
         player['alive'] = False
+
 
 def check_out_of_bounds(player):
     x = player['x']
@@ -80,8 +86,10 @@ def check_out_of_bounds(player):
     # Use >= for the upperbound otherwise the player stops a block later
     # than for the lower bound
     if (x <= x_lower_bound or x > x_upper_bound or
-        y <= y_lower_bound or y > y_upper_bound):
+            y <= y_lower_bound or y > y_upper_bound):
         player['alive'] = False
 
+
 def should_update(player):
-    return player['alive'] # and not player['win']
+    return player['alive']  # and not player['win']
+
