@@ -27,7 +27,7 @@ polling_rate = 1
 snake_speed = 0.1
 
 # Measured in seconds
-time_to_start_game = 15
+time_to_start_game = 3
 
 # How many seconds to add if a new player joins the game before it starts
 # Measured in seconds

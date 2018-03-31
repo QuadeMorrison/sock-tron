@@ -1,6 +1,7 @@
 import datetime
 import settings
 import players
+import grid
 
 # Signifies private with the "_"
 _room_list = {}
@@ -73,6 +74,7 @@ def spawn_players(room_id):
     for i, player in enumerate(players_in_room):
         player['x'] = coords[i][0]
         player['y'] = coords[i][1]
+        grid.mark_loc(room_id, player['x'], player['y'])
 
 
 # Removes the player from whatever room it may be in.
