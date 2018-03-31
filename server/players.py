@@ -10,11 +10,14 @@ def create_player(player_count, dir='left'):
         'color': settings.player_colors[player_count % settings.max_players],
         'x': 0,
         'y': 0,
-        'dir': dir,
+        'dir': [dir],
         'alive': True,
         'num': player_count + 1
     }
 
+def trim_dir_list(player):
+    if len(player['dir']) > 1:
+        player['dir'].pop(0)
 
 # Figures out starting positions in a variable manner.
 def calc_player_spawn_coords(num_of_players):
@@ -48,18 +51,16 @@ def calc_player_spawn_coords(num_of_players):
 
     return {'color': "red", 'x': 0, 'y': 0}
 
-
 def change_dir(player, key):
-    prev_key = player['dir']
+    prev_key = player['dir'][-1]
     if (not (key == 'left' and prev_key == 'right') and
         not (key == 'right' and prev_key == 'left') and
         not (key == 'up' and prev_key == 'down') and
             not (key == 'down' and prev_key == 'up')):
-        player['dir'] = key
-
+        player['dir'].append(key)
 
 def move(room_id, player):
-    dir = player['dir']
+    dir = player['dir'][0]
     dimension = "x" if (dir == "left" or dir == "right") else "y"
     move_by = 1 if (dir == "right" or dir == "down") else -1
     axis = "x" if (dimension == "x") else "y"

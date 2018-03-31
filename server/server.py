@@ -71,7 +71,6 @@ async def keydown(sid, key):
     if player:
         players.change_dir(player, key)
 
-
 async def search_for_players(room_id):
     # Life cycle hook for the client
     await sio.emit('searching_for_players')
@@ -126,12 +125,10 @@ async def search_for_players(room_id):
 
                 prev_num_players = num_players
 
-
             # The game is ready to start
             if i == settings.time_to_start_game:
                 rooms.mark_room_as_started(room_id)
                 break
-
 
 async def play(room_id):
     # Life cycle hook for the client
@@ -156,6 +153,10 @@ async def play(room_id):
             if players.should_update(player):
                 grid.mark_loc(room_id, player['x'], player['y'])
 
+        # after the players have moved, fix up the dir list.
+        for player in players_in_room:
+            players.trim_dir_list(player)
+
         await asyncio.sleep(settings.snake_speed)
         await sio.emit('update_players', players_in_room, room=room_id)
 
@@ -167,7 +168,6 @@ async def play(room_id):
         elif len(alive_players) == 0:
             # It was a tie.
             return prev_alive_players
-
 
 # Creates a game for a given room
 async def new_game(room_id):
@@ -184,4 +184,3 @@ if __name__ == '__main__':
     app = web.Application()
     sio.attach(app)
     web.run_app(app, port=8888)
-
