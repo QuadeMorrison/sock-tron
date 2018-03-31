@@ -1,8 +1,10 @@
 import settings
 import grid
+import rooms
 import math
 
-def create_player(player_count, dir = 'left'):
+
+def create_player(player_count, dir='left'):
     # The position is calculated when the match actually starts.
     return {
         'color': settings.player_colors[player_count % settings.max_players],
@@ -13,12 +15,12 @@ def create_player(player_count, dir = 'left'):
         'num': player_count + 1
     }
 
+
 # Figures out starting positions in a variable manner.
 def calc_player_spawn_coords(num_of_players):
     sp = settings.spawn_padding
 
-    spawn_w = settings.grid_w - sp * 2
-    spawn_h = settings.grid_h - sp * 2
+    spawn_dim = settings.grid_dimensions(num_of_players) - sp * 2
 
     # Figure out how many rows and columns for each row.
     row_len = max(1, math.ceil(math.sqrt(num_of_players)))
@@ -36,23 +38,25 @@ def calc_player_spawn_coords(num_of_players):
 
     for i, col_len in enumerate(column_list):
         for j in range(col_len):
-            x = math.floor(j*spawn_w / col_len + spawn_w / (2*col_len) + sp)
-            y = math.floor(i*spawn_h / row_len + spawn_h / (2*row_len) + sp)
+            x = math.floor(j*spawn_dim / col_len + spawn_dim / (2*col_len) + sp)
+            y = math.floor(i*spawn_dim / row_len + spawn_dim / (2*row_len) + sp)
 
-            coords.append( (x, y) )
+            coords.append((x, y))
 
     return coords
     print(coords)
 
-    return { 'color': "red", 'x': 0, 'y': 0 }
+    return {'color': "red", 'x': 0, 'y': 0}
+
 
 def change_dir(player, key):
     prev_key = player['dir']
-    if (not (key == 'left'  and prev_key == 'right') and
-        not (key == 'right' and prev_key == 'left')  and
-        not (key == 'up'    and prev_key == 'down')  and
-        not (key == 'down'  and prev_key == 'up')):
+    if (not (key == 'left' and prev_key == 'right') and
+        not (key == 'right' and prev_key == 'left') and
+        not (key == 'up' and prev_key == 'down') and
+            not (key == 'down' and prev_key == 'up')):
         player['dir'] = key
+
 
 def move(room_id, player):
     dir = player['dir']
@@ -62,26 +66,30 @@ def move(room_id, player):
 
     player[axis] += move_by
     check_collision(room_id, player)
-    check_out_of_bounds(player)
+    check_out_of_bounds(room_id, player)
+
 
 def check_collision(room_id, player):
     if (grid.is_marked(room_id, player['x'], player['y'])):
         player['alive'] = False
 
-def check_out_of_bounds(player):
+
+def check_out_of_bounds(room_id, player):
+    room = rooms.room_to_list(room_id)
     x = player['x']
     y = player['y']
 
     x_lower_bound = 0
     y_lower_bound = 0
-    x_upper_bound = settings.grid_w
-    y_upper_bound = settings.grid_h
+    upper_bound = settings.grid_dimensions(len(room))
 
     # Use >= for the upperbound otherwise the player stops a block later
     # than for the lower bound
-    if (x <= x_lower_bound or x > x_upper_bound or
-        y <= y_lower_bound or y > y_upper_bound):
+    if (x <= x_lower_bound or x > upper_bound or
+            y <= y_lower_bound or y > upper_bound):
         player['alive'] = False
 
+
 def should_update(player):
-    return player['alive'] # and not player['win']
+    return player['alive']  # and not player['win']
+

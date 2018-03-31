@@ -1,6 +1,5 @@
 <template lang="pug">
   div(id="app")
-    h1 Sock Tron
     router-view
 </template>
 
@@ -12,7 +11,7 @@ export default {
 
 <style>
 body {
-  background: black;
+  background: #001100;
 }
 
 #app {
@@ -21,6 +20,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: white;
-  margin-top: 60px;
+  margin-top: 20px;
 }
 </style>
