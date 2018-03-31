@@ -147,7 +147,7 @@ export default {
       let ty = options.y || this.win_h/2;
 
       if (tx <= 0) tx += x_displacement
-      if (tx >= win_h) tx -= x_displacement
+      if (tx >= this.win_h) tx -= x_displacement
       if (ty <= 0) {
 	ty += y_displacement
 	this.ctx.strokeStyle = '#111';
