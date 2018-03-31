@@ -51,12 +51,14 @@ def calc_player_spawn_coords(num_of_players):
 
     return {'color': "red", 'x': 0, 'y': 0}
 
+# Adds the direction to the player. Only adds if the direction is valid, to
+# safegaurd against bit corruption.
 def change_dir(player, key):
     prev_key = player['dir'][-1]
-    if (not (key == 'left' and prev_key == 'right') and
-        not (key == 'right' and prev_key == 'left') and
-        not (key == 'up' and prev_key == 'down') and
-            not (key == 'down' and prev_key == 'up')):
+    if ((key == 'left' or key == 'right' or key == 'up' or key == 'down') and
+            not (key == 'left' and prev_key == 'right') and not (key == 'right'
+                and prev_key == 'left') and not (key == 'up' and prev_key ==
+                    'down') and not (key == 'down' and prev_key == 'up')):
         player['dir'].append(key)
 
 def move(room_id, player):

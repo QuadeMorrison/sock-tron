@@ -137,7 +137,7 @@ export default {
 
       let size = options.size || 60
       this.ctx.save();
-      this.ctx.font = size + 'px sans-serif';
+      this.ctx.font = size + 'px \'Share Tech\'';
       this.ctx.fillStyle = color;
 
       let tm = this.ctx.measureText(text);
