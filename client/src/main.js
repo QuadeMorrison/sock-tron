@@ -4,8 +4,9 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import VueSocketio from 'vue-socket.io';
+import Settings from '../settings.json';
 
-Vue.use(VueSocketio, 'http://0.0.0.0:8888');
+Vue.use(VueSocketio, 'http://'+Settings.host+':'+Settings.port_server);
 
 Vue.config.productionTip = false
 

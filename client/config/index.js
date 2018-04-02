@@ -4,6 +4,8 @@
 
 const path = require('path')
 
+var settings = require('../settings.json')
+
 module.exports = {
   dev: {
 
@@ -13,8 +15,8 @@ module.exports = {
     proxyTable: {},
 
     // Various Dev Server settings
-    host: 'localhost', // can be overwritten by process.env.HOST
-    port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    host: settings.host, // can be overwritten by process.env.HOST
+    port: settings.port_client, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,
