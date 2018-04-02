@@ -31,6 +31,29 @@ export default {
   sockets: {
 	 connect() {
 		console.log("Connected to server")
+		this.canv_players = [];
+		this.pl_num = 0;
+		this.pl_num = 0;
+
+		// grid_dim: 0
+		// win_w: 0
+		// win_h: 0
+		// grid: 10
+		// pl_dim: 8
+		// recv_delta: 0
+		// last_time: (new Date()).getTime()
+		//delta_inc: 0
+		//frame_delta: 0
+		// FPS: 30
+		 
+		// ctx: null
+		this.canv_players = [];
+		this.pl_num = 0;
+		this.win_list = null;
+		this.count_down = 0;
+		this.searching = false;
+		this.start_draw_players = false;
+
 		this.$socket.emit('enter_room')
 	 },
 	 game_over(players) {
