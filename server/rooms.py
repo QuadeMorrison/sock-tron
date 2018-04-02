@@ -66,7 +66,7 @@ def room_to_list(room_id):
         return []
 
 
-def spawn_players(room_id):
+def spawn_players(room_id, with_collision=False):
     _room = get_room(room_id)
     coords = players.calc_player_spawn_coords(len(_room))
     players_in_room = room_to_list(room_id)
@@ -74,7 +74,8 @@ def spawn_players(room_id):
     for i, player in enumerate(players_in_room):
         player['x'] = coords[i][0]
         player['y'] = coords[i][1]
-        grid.mark_loc(room_id, player['x'], player['y'])
+        if with_collision:
+            grid.mark_loc(room_id, player['x'], player['y'])
 
 
 # Removes the player from whatever room it may be in.
