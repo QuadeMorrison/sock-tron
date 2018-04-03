@@ -32,8 +32,6 @@ export default {
 	 connect() {
 		console.log("Connected to server")
 		this.canv_players = [];
-		this.pl_num = 0;
-		this.pl_num = 0;
 
 		// ctx: null
 		this.canv_players = [];
@@ -183,20 +181,34 @@ export default {
 		this.draw_text(this.count_down.toString());
 	 },
 	 draw_game_over() {
-		this.canv_players.forEach(pl => {
-		  if (pl.alive) {
-			 this.draw_text_on_head("winner", pl.num);
-		  } else {
-			 this.draw_text_on_head("loser", pl.num);
-		  }
+		let head_text   = "win";
+		let result_text = "You Won";
+		let lost = true; // Gets set to false if you aren't in the list.
+
+		if (this.win_list.length > 1) {
+
+		  head_text = "tie";
+		  result_text = "You Tied";
+		}
+
+		this.win_list.forEach(pl => {
+		  if (pl.num == this.pl_num) { lost = false }
+		  this.draw_text_on_head(head_text, pl.num);
 		});
 
-		this.draw_text("Game Over");
+		// Only if YOU lost.
+		if (lost) {
+		  this.draw_text_on_head("lose", this.pl_num);
+		  result_text = "You Lost";
+		}
+
+		// game over text
+		this.draw_text(result_text);
 	 },
 	 draw_text_on_head(message, pl_num=this.pl_num) {
 		let pl = this.canv_players[pl_num];
 		let size = 25;
-		let color = pl.color
+		let color = "white"; // pl.color
 		let x = pl.cur_x;
 		let y = pl.cur_y-this.grid;
 
