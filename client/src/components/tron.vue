@@ -5,7 +5,7 @@ div(v-if="game_ready")
 		  ref="game_window")
   div(v-show="win_list != null")
     pre(@click="play_button")
-      | <br />
+      br
       | ██████╗ ██╗      █████╗ ██╗   ██╗     █████╗  ██████╗  █████╗ ██╗███╗   ██╗
       | ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝    ██╔══██╗██╔════╝ ██╔══██╗██║████╗  ██║
       | ██████╔╝██║     ███████║ ╚████╔╝     ███████║██║  ███╗███████║██║██╔██╗ ██║
@@ -28,6 +28,13 @@ div(v-else)
     pre(v-show='blink' :style='{ "font-size": "20px" }')
       br
       | By Quade and Alan
+      br
+      br
+      br
+  pre
+    | Music by: &nbsp
+    a(href="https://opengameart.org/users/matthewpablo") matthewpablo
+		
 </template>
 
 <script>
