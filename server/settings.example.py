@@ -5,6 +5,9 @@ spawn_padding = 4
 # should measure in viewports maybe???
 grid = 10
 
+# The port!
+port = 8888
+
 # Scales the grid_w and grid_h. How many blocks per player
 blocks_per_player = 12
 
