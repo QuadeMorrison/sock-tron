@@ -19,6 +19,9 @@ max_players = 8
 # this many players
 min_players = 2
 
+# The Area Constant!!!!
+area_constant = 20
+
 # How often we should check that another player has joined the room
 polling_rate = 1
 
