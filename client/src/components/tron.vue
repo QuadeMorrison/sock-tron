@@ -6,6 +6,7 @@ div(v-if="game_ready")
 div(v-else)
   img(src="/static/sock-logo.gif")
   button(v-on:click="button_press") Play Game
+  p By Quade and Alan
 </template>
 
 <script>
