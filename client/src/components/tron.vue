@@ -1,8 +1,11 @@
 <template lang="pug">
-div
+div(v-if="game_ready")
   canvas#game_window(:width=`this.win_w + "px"`
-	 :height=`this.win_h + "px"`
-		ref="game_window")
+		:height=`this.win_h + "px"`
+		  ref="game_window")
+div(v-else)
+  img(src="/static/sock-logo.png")
+  button(v-on:click="button_press") Play Game
 </template>
 
 <script>
@@ -16,6 +19,7 @@ export default {
 		canv_players: [],
 		pl_num: 0,
 		grid_dim: 0,
+		game_ready: false,
 		win_w: 0,  win_h: 0,
 		grid: 10,  pl_dim: 8,
 		win_list: null, FPS: 30,
@@ -32,16 +36,11 @@ export default {
 	 connect() {
 		console.log("Connected to server")
 		this.canv_players = [];
-		this.pl_num = 0;
-		this.pl_num = 0;
 
-		// ctx: null
 		this.canv_players = [];
 		this.pl_num = 0;
 		this.win_list = null;
 		this.start_draw_players = false
-
-		this.$socket.emit('enter_room')
 	 },
 	 game_over(players) {
 		this.win_list = players;
@@ -59,7 +58,6 @@ export default {
 	 init_settings(settings) {
 		// consistent naming
 		this.scale_window(settings)
-		this.ctx = this.$refs.game_window.getContext("2d")
 	 },
 	 player_num(num) {
 		this.pl_num = num
@@ -118,6 +116,10 @@ export default {
 
 		  this.canv_players[pl["num"]] = c_pl;
 		});
+	 },
+	 button_press() {
+		this.game_ready = true;
+		this.$socket.emit('enter_room')
 	 },
 	 grid_to_win(c) {
 		return c * this.grid-this.grid/2;
@@ -183,20 +185,34 @@ export default {
 		this.draw_text(this.count_down.toString());
 	 },
 	 draw_game_over() {
-		this.canv_players.forEach(pl => {
-		  if (pl.alive) {
-			 this.draw_text_on_head("winner", pl.num);
-		  } else {
-			 this.draw_text_on_head("loser", pl.num);
-		  }
+		let head_text   = "win";
+		let result_text = "You Won";
+		let lost = true; // Gets set to false if you aren't in the list.
+
+		if (this.win_list.length > 1) {
+
+		  head_text = "tie";
+		  result_text = "You Tied";
+		}
+
+		this.win_list.forEach(pl => {
+		  if (pl.num == this.pl_num) { lost = false }
+		  this.draw_text_on_head(head_text, pl.num);
 		});
 
-		this.draw_text("Game Over");
+		// Only if YOU lost.
+		if (lost) {
+		  this.draw_text_on_head("lose", this.pl_num);
+		  result_text = "You Lost";
+		}
+
+		// game over text
+		this.draw_text(result_text);
 	 },
 	 draw_text_on_head(message, pl_num=this.pl_num) {
 		let pl = this.canv_players[pl_num];
 		let size = 25;
-		let color = pl.color
+		let color = "white"; // pl.color
 		let x = pl.cur_x;
 		let y = pl.cur_y-this.grid;
 
@@ -273,6 +289,9 @@ export default {
 
 		this.ctx.restore();
 	 },
+	 ok() {
+		return false;
+	 },
 	 scale_window(settings) {
 		this.grid = settings.grid;
 
@@ -300,6 +319,12 @@ export default {
 	 // so we have to bind the event the old fashioned way
 	 window.addEventListener('keydown', this.key_handler)
   },
+  updated() {
+	 // Set the context.
+	 if (this.$refs.game_window) {
+		this.ctx = this.$refs.game_window.getContext("2d")
+	 }
+  },
 }
 </script>
 
@@ -308,7 +333,19 @@ export default {
 #game_window {
   border: white solid 1px;
   background: #111;
-  margin: 0;
-  padding: 0;
+  margin: auto;
+}
+
+div {
+  height: 100%;
+  display: grid;
+}
+
+button {
+  margin: auto;
+}
+
+img {
+  margin: auto;
 }
 </style>

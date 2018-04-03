@@ -12,6 +12,14 @@ export default {
 <style>
 body {
   background: #001100;
+  display: grid;
+}
+
+html {
+  min-width: 100%;
+  min-height: 100%;
+  display: grid;
+  background: #001100;
 }
 
 #app {
@@ -20,6 +28,5 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: white;
-  margin-top: 20px;
 }
 </style>
