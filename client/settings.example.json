@@ -1,5 +1,5 @@
 {
 	"host": "localhost",
-	"port_client": 0,
-	"port_server": 0
+	"port_client": 8080,
+	"port_server": 8888
 }
