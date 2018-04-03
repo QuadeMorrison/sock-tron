@@ -19,7 +19,7 @@ export default {
 		win_w: 0,  win_h: 0,
 		grid: 10,  pl_dim: 8,
 		win_list: null, FPS: 30,
-		count_down: 0, searching: false,
+		count_down: 0, searching: true,
 		recv_delta: 0, last_time: (new Date()).getTime(),
 		delta_inc: 0, frame_delta: 0,
 		start_draw_players: false
@@ -87,9 +87,6 @@ export default {
 
 		  c_pl.alive = pl["alive"]
 		});
-	 },
-	 searching_for_players() {
-		this.searching = true;
 	 },
 	 restart_search() {
 		this.count_down = 0
