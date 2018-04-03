@@ -67,10 +67,7 @@ async def disconnect(sid):
 
 @sio.on('keydown')
 async def keydown(sid, key):
-    player = rooms.get_player(sid)
-
-    if player:
-        players.change_dir(player, key)
+    players.change_dir(sid, key)
 
 async def search_for_players(room_id):
     # Life cycle hook for the client
@@ -134,7 +131,7 @@ async def search_for_players(room_id):
 async def play(room_id):
     # Life cycle hook for the client
     rooms.spawn_players(room_id, with_collision=True)
-    
+
     await sio.emit('start_game', rooms.room_to_list(room_id), room=room_id)
 
 

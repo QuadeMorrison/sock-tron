@@ -1,6 +1,7 @@
 import datetime
 import settings
 import players
+import random
 import grid
 
 # Signifies private with the "_"
@@ -8,6 +9,7 @@ _room_list = {}
 _sid_to_room_id = {}
 _current_room_to_assign = None
 _room_started = {}
+_room_next_color = {}
 
 
 def get_room(room_id):
@@ -53,7 +55,8 @@ def assign_room(sid, room_id=None):
         room = new_room(room_id)
 
     player_count = get_total_players(room_id)
-    room[sid] = players.create_player(player_count)
+
+    room[sid] = players.create_player(player_count, room_id)
 
     return len(room) == 1, room_id, room[sid]['num']
 
@@ -107,6 +110,7 @@ def destroy_room(room_id):
             _sid_to_room_id[sid] = None
 
         _room_started[room_id] = None
+        _room_next_color[room_id] = None
         # Enforcing garbage collection I suppose.
         # Can't hurt to be safe :P, or can it?
         _room_list[room_id].clear()
@@ -122,6 +126,7 @@ def get_total_players(room_id):
 def new_room(room_id):
     global _room_list
     room = _room_list[room_id] = {}
+    _room_next_color[room_id] = random.randrange(0, len(settings.player_colors))
     return room
 
 
@@ -147,9 +152,11 @@ def remove_dead_players(room_id):
     filtered_room = {}
     player_count = 0
 
-    for sid, player in room.items():
+    sorted_room = sorted(room.items(), key=lambda p: p[1]['num'])
+    for sid, player in sorted_room:
         if player['alive']:
-            filtered_room[sid] = players.create_player(player_count)
+            player['num'] = player_count + 1
+            filtered_room[sid] = player
             player_count = player_count + 1
         else:
             _sid_to_room_id[sid] = None

@@ -5,10 +5,14 @@ import rooms
 import math
 
 
-def create_player(player_count, dir='left'):
+def create_player(player_count, room_id, color=None, dir='left'):
     # The position is calculated when the match actually starts.
+    next_color = rooms._room_next_color[room_id]
+    colors = settings.player_colors
+    c = color if color else colors[next_color % len(colors)]
+    rooms._room_next_color[room_id] += 1
     return {
-        'color': settings.player_colors[player_count % settings.max_players],
+        'color': c,
         'x': 0,
         'y': 0,
         'dir': [dir],
@@ -54,13 +58,24 @@ def calc_player_spawn_coords(num_of_players):
 
 # Adds the direction to the player. Only adds if the direction is valid, to
 # safegaurd against bit corruption.
-def change_dir(player, key):
+def change_dir(sid, key):
+    player = rooms.get_player(sid)
+
+    if player:
+        room_id = rooms.sid_to_room_id(sid)
+        if not rooms.has_game_started(room_id):
+            player['dir'][0] = key
+        else:
+            add_key_to_buffer(player, key)
+
+def add_key_to_buffer(player, key):
     prev_key = player['dir'][-1]
     if ((key == 'left' or key == 'right' or key == 'up' or key == 'down') and
             not (key == 'left' and prev_key == 'right') and not (key == 'right'
                 and prev_key == 'left') and not (key == 'up' and prev_key ==
                     'down') and not (key == 'down' and prev_key == 'up')):
         player['dir'].append(key)
+
 
 def move(room_id, player):
     dir = player['dir'][0]
