@@ -1,8 +1,10 @@
 <template lang="pug">
-div
+div(v-if="game_ready")
   canvas#game_window(:width=`this.win_w + "px"`
-	 :height=`this.win_h + "px"`
-		ref="game_window")
+		:height=`this.win_h + "px"`
+		  ref="game_window")
+div(v-else)
+  button(v-on:click="button_press") Play Game
 </template>
 
 <script>
@@ -16,6 +18,7 @@ export default {
 		canv_players: [],
 		pl_num: 0,
 		grid_dim: 0,
+		game_ready: false,
 		win_w: 0,  win_h: 0,
 		grid: 10,  pl_dim: 8,
 		win_list: null, FPS: 30,
@@ -33,13 +36,10 @@ export default {
 		console.log("Connected to server")
 		this.canv_players = [];
 
-		// ctx: null
 		this.canv_players = [];
 		this.pl_num = 0;
 		this.win_list = null;
 		this.start_draw_players = false
-
-		this.$socket.emit('enter_room')
 	 },
 	 game_over(players) {
 		this.win_list = players;
@@ -57,7 +57,6 @@ export default {
 	 init_settings(settings) {
 		// consistent naming
 		this.scale_window(settings)
-		this.ctx = this.$refs.game_window.getContext("2d")
 	 },
 	 player_num(num) {
 		this.pl_num = num
@@ -116,6 +115,10 @@ export default {
 
 		  this.canv_players[pl["num"]] = c_pl;
 		});
+	 },
+	 button_press() {
+		this.game_ready = true;
+		this.$socket.emit('enter_room')
 	 },
 	 grid_to_win(c) {
 		return c * this.grid-this.grid/2;
@@ -285,6 +288,9 @@ export default {
 
 		this.ctx.restore();
 	 },
+	 ok() {
+		return false;
+	 },
 	 scale_window(settings) {
 		this.grid = settings.grid;
 
@@ -312,6 +318,12 @@ export default {
 	 // so we have to bind the event the old fashioned way
 	 window.addEventListener('keydown', this.key_handler)
   },
+  updated() {
+	 // Set the context.
+	 if (this.$refs.game_window) {
+		this.ctx = this.$refs.game_window.getContext("2d")
+	 }
+  },
 }
 </script>
 
@@ -320,7 +332,15 @@ export default {
 #game_window {
   border: white solid 1px;
   background: #111;
-  margin: 0;
-  padding: 0;
+  margin: auto;
+}
+
+div {
+  height: 100%;
+  display: grid;
+}
+
+button {
+  margin: auto;
 }
 </style>
