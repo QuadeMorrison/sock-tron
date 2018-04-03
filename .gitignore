@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 
 client/settings.json
+server/settings.py
 
 # Runtime data
 pids

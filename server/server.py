@@ -2,6 +2,7 @@
 from aiohttp import web
 import socketio
 import asyncio
+import settingtools
 import settings
 import players
 import grid
@@ -22,7 +23,7 @@ sio = socketio.AsyncServer()
 async def connect(sid, environ):
     # What does await emit do, does it wait for a verification to come from the
     # client? If not, then that await is pointless, right?
-    await sio.emit('init_settings', settings.get_as_obj(), room=sid)
+    await sio.emit('init_settings', settingtools.get_as_obj(), room=sid)
     print('Connected', sid)
 
 
@@ -95,7 +96,7 @@ async def search_for_players(room_id):
                     await sio.emit('player_num', player['num'], room=sid)
 
                 players = rooms.room_to_list(room_id)
-                settings_obj = settings.get_as_obj(num_players)
+                settings_obj = settingtools.get_as_obj(num_players)
                 count_down = settings.time_to_start_game - i
 
                 payload = {

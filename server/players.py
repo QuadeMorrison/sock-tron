@@ -1,4 +1,5 @@
 import settings
+import settingtools
 import grid
 import rooms
 import math
@@ -23,7 +24,7 @@ def trim_dir_list(player):
 def calc_player_spawn_coords(num_of_players):
     sp = settings.spawn_padding
 
-    spawn_dim = settings.grid_dimensions(num_of_players) - sp * 2
+    spawn_dim = settingtools.grid_dimensions(num_of_players) - sp * 2
 
     # Figure out how many rows and columns for each row.
     row_len = max(1, math.ceil(math.sqrt(num_of_players)))
@@ -84,7 +85,7 @@ def check_out_of_bounds(room_id, player):
 
     x_lower_bound = 0
     y_lower_bound = 0
-    upper_bound = settings.grid_dimensions(len(room))
+    upper_bound = settingtools.grid_dimensions(len(room))
 
     # Use >= for the upperbound otherwise the player stops a block later
     # than for the lower bound
