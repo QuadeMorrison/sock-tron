@@ -39,7 +39,6 @@ export default {
 		this.canv_players = [];
 		this.pl_num = 0;
 		this.win_list = null;
-		this.searching = false;
 		this.start_draw_players = false
 
 		this.$socket.emit('enter_room')
