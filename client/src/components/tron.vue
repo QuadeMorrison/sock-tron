@@ -63,6 +63,7 @@ export default {
 	 },
 	 player_num(num) {
 		this.pl_num = num
+		console.log('PLAYER_NUMBER', this.pl_num)
 	 },
 	 update_players(players) {
 		// Figure out time difference.
