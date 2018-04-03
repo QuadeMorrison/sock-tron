@@ -13,7 +13,7 @@ blocks_per_player = 12
 min_dimension = 50
 
 # Measured in snakes
-max_players = 8
+max_players = 10
 
 # Start the countdown once we atleast have
 # this many players
