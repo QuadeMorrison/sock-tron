@@ -44,6 +44,9 @@ export default {
 	   blink: true,
 	   show_line: true,
 	   random_show: 1500,
+	   settings: {},
+	   text_draw_size: 100,
+	   text_min_size: 15
 	 }
   },
   created() {
@@ -73,13 +76,15 @@ export default {
 		this.start_draw_players = false
 		this.canv_players = []
 		this.count_down = data.count_down;
-		this.scale_window(data.settings)
+		this.settings = data.settings
+		this.scale_window()
 		this.init_players(data.players)
 		this.start_draw_players = true
 	 },
 	 init_settings(settings) {
 		// consistent naming
-		this.scale_window(settings)
+		this.settings = settings
+		this.scale_window()
 	 },
 	 player_num(num) {
 		this.pl_num = num
@@ -166,7 +171,8 @@ export default {
 	 draw_text(text, options = {}) {
 		let color = options.color || "white";
 
-		let size = options.size || 60
+		let size = options.size || this.text_draw_size
+		console.log("Font-size", size)
 		this.ctx.save();
 
 		// Cool TECH font
@@ -233,7 +239,8 @@ export default {
 	 },
 	 draw_text_on_head(message, pl_num=this.pl_num) {
 		let pl = this.canv_players[pl_num];
-		let size = 25;
+		let size = this.text_draw_size / 3;
+		if (size < this.text_min_size) size = this.text_min_size;
 		let color = "white"; // pl.color
 		let x = pl.cur_x;
 		let y = pl.cur_y-this.grid;
@@ -314,7 +321,8 @@ export default {
 	 ok() {
 		return false;
 	 },
-	 scale_window(settings) {
+	 scale_window() {
+		let settings = this.settings
 		this.grid = settings.grid;
 
 		// scale the grid
@@ -324,6 +332,7 @@ export default {
 		this.grid = dim / settings.grid_dim * this.grid
 
 		this.grid_dim = settings.grid_dim
+		this.text_draw_size = this.grid * 4
 
 		// scale the player
 		this.pl_dim = this.grid * 0.8
@@ -340,6 +349,7 @@ export default {
 	 // Vue's keydown event only really works for input elements
 	 // so we have to bind the event the old fashioned way
 	 window.addEventListener('keydown', this.key_handler)
+	 window.addEventListener('resize', this.scale_window)
   },
   updated() {
 	 // Set the context.
