@@ -5,17 +5,21 @@ div(v-if="game_ready")
 		  ref="game_window")
 div(v-else)
   img(src="/static/sock-logo.gif")
-
   pre(@click="button_press")
+    template(v-if='show_line') &nbsp
     | ███████╗████████╗ █████╗ ██████╗ ████████╗ ██████╗  █████╗ ███╗   ███╗███████╗
     | ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝ ██╔══██╗████╗ ████║██╔════╝
     | ███████╗   ██║   ███████║██████╔╝   ██║   ██║  ███╗███████║██╔████╔██║█████╗
     | ╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
     | ███████║   ██║   ██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
     | ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
-
-
-
+    |
+    pre(v-show='show_line')
+      br
+      br
+    pre(v-show='blink' :style='{ "font-size": "20px" }')
+      br
+      | By Quade and Alan
 </template>
 
 <script>
@@ -25,22 +29,30 @@ export default {
   name: 'tron',
   data () {
 	 return {
-		ctx: null,
-		canv_players: [],
-		pl_num: 0,
-		grid_dim: 0,
-		game_ready: false,
-		win_w: 0,  win_h: 0,
-		grid: 10,  pl_dim: 8,
-		win_list: null, FPS: 30,
-		count_down: 0, searching: true,
-		recv_delta: 0, last_time: (new Date()).getTime(),
-		delta_inc: 0, frame_delta: 0,
-		start_draw_players: false
+	   ctx: null,
+	   canv_players: [],
+	   pl_num: 0,
+	   grid_dim: 0,
+	   game_ready: false,
+	   win_w: 0,  win_h: 0,
+	   grid: 10,  pl_dim: 8,
+	   win_list: null, FPS: 30,
+	   count_down: 0, searching: true,
+	   recv_delta: 0, last_time: (new Date()).getTime(),
+	   delta_inc: 0, frame_delta: 0,
+	   start_draw_players: false,
+	   blink: true,
+	   show_line: true,
+	   random_show: 1500,
 	 }
   },
   created() {
-	 this.draw_interval_id = window.setInterval(this.draw, 1000 / this.FPS)
+	 window.setInterval(this.draw, 1000 / this.FPS)
+    window.setInterval(() => {
+      this.blink = !this.blink
+      this.random_show = Math.random * 1500 + 500;
+    }, 1000)
+    window.setInterval(() => this.show_line = !this.show_line, this.random_show)
   },
   sockets: {
 	 connect() {
@@ -322,7 +334,7 @@ export default {
 	 key_handler(e) {
 		let key = keys[e.which]
 		if (key) this.$socket.emit('keydown', key)
-	 }
+	 },
   },
   mounted() {
 	 // Vue's keydown event only really works for input elements
