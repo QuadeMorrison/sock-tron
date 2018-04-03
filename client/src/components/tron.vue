@@ -4,6 +4,7 @@ div(v-if="game_ready")
 		:height=`this.win_h + "px"`
 		  ref="game_window")
 div(v-else)
+  img(src="/static/sock-logo.png")
   button(v-on:click="button_press") Play Game
 </template>
 
@@ -341,6 +342,10 @@ div {
 }
 
 button {
+  margin: auto;
+}
+
+img {
   margin: auto;
 }
 </style>
