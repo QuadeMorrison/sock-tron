@@ -4,8 +4,7 @@ div(v-if="game_ready")
 		:height=`this.win_h + "px"`
 		  ref="game_window")
   div(v-show="win_list != null")
-    pre(@click="play_button")
-      br
+    pre.play_again(@click="play_button")
       | ██████╗ ██╗      █████╗ ██╗   ██╗     █████╗  ██████╗  █████╗ ██╗███╗   ██╗
       | ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝    ██╔══██╗██╔════╝ ██╔══██╗██║████╗  ██║
       | ██████╔╝██║     ███████║ ╚████╔╝     ███████║██║  ███╗███████║██║██╔██╗ ██║
@@ -18,8 +17,8 @@ div(v-else)
     template(v-if='show_line') &nbsp
     | ███████╗████████╗ █████╗ ██████╗ ████████╗     ██████╗  █████╗ ███╗   ███╗███████╗
     | ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝
-    | ███████╗   ██║   ███████║██████╔╝   ██║       ██║  ███╗███████║██╔████╔██║█████╗  
-    | ╚════██║   ██║   ██╔══██║██╔══██╗   ██║       ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝  
+    | ███████╗   ██║   ███████║██████╔╝   ██║       ██║  ███╗███████║██╔████╔██║█████╗
+    | ╚════██║   ██║   ██╔══██║██╔══██╗   ██║       ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
     | ███████║   ██║   ██║  ██║██║  ██║   ██║       ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
     | ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝        ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
     pre(v-show='show_line')
@@ -34,7 +33,7 @@ div(v-else)
   pre
     | Music by: &nbsp
     a(href="https://opengameart.org/users/matthewpablo") matthewpablo
-		
+
 </template>
 
 <script>
@@ -61,7 +60,8 @@ export default {
 	   random_show: 1500,
 	   settings: {},
 	   text_draw_size: 100,
-	   text_min_size: 15
+	   text_min_size: 15,
+
 	 }
   },
   created() {
@@ -390,6 +390,16 @@ export default {
   border: white solid 1px;
   background: #111;
   margin: auto;
+}
+
+.play_again {
+  position: absolute !important;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  left: 0;
+  right: 0;
+  top: 100px;
 }
 
 div {
