@@ -4,7 +4,7 @@ div(v-if="game_ready")
 		:height=`this.win_h + "px"`
 		  ref="game_window")
   div(v-show="win_list != null")
-    pre.play_again(@click="play_button")
+    pre.button.play_again(@click="play_button")
       | ██████╗ ██╗      █████╗ ██╗   ██╗     █████╗  ██████╗  █████╗ ██╗███╗   ██╗
       | ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝    ██╔══██╗██╔════╝ ██╔══██╗██║████╗  ██║
       | ██████╔╝██║     ███████║ ╚████╔╝     ███████║██║  ███╗███████║██║██╔██╗ ██║
@@ -13,7 +13,7 @@ div(v-if="game_ready")
       | ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 div(v-else)
   img(src="/static/sock-logo.gif")
-  pre(@click="start_game_button")
+  pre#start_game.button(@click="start_game_button")
     template(v-if='show_line') &nbsp
     | ███████╗████████╗ █████╗ ██████╗ ████████╗     ██████╗  █████╗ ███╗   ███╗███████╗
     | ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝
@@ -31,8 +31,10 @@ div(v-else)
       br
       br
   pre
-    | Music by: &nbsp
+    | Music by:&nbsp
     a(href="https://opengameart.org/users/matthewpablo") matthewpablo
+    |  | See on:&nbsp
+    a(href="https://github.com/QuadeMorrison/sock-tron") GitHub
 
 </template>
 
@@ -60,8 +62,7 @@ export default {
 	   random_show: 1500,
 	   settings: {},
 	   text_draw_size: 100,
-	   text_min_size: 15,
-
+	   text_min_size: 15
 	 }
   },
   created() {
@@ -132,7 +133,7 @@ export default {
 		this.count_down = 0;
 		this.searching = false;
 		this.init_players(players)
-	 }
+	 },
   },
   methods: {
 	 init_players(players) {
@@ -368,12 +369,17 @@ export default {
 		let key = keys[e.which]
 		if (key) this.$socket.emit('keydown', key)
 	 },
+	 scale_logo() {
+	 },
+	 scale() {
+		this.scale_window()
+	 }
   },
   mounted() {
 	 // Vue's keydown event only really works for input elements
 	 // so we have to bind the event the old fashioned way
 	 window.addEventListener('keydown', this.key_handler)
-	 window.addEventListener('resize', this.scale_window)
+	 window.addEventListener('resize', this.scale)
   },
   updated() {
 	 // Set the context.
@@ -386,6 +392,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+@media (max-width: 1024px), (max-height: 800px){
+    img {
+	height: 600px;
+      }
+}
+
+@media (max-width: 800px), (max-height: 600px){
+    img {
+	height: 400px;
+      }
+}
+
 #game_window {
   border: white solid 1px;
   background: #111;
@@ -421,8 +439,22 @@ pre {
   line-height: 0.80 !important;
 }
 
-pre:hover {
+.button:hover {
   cursor: pointer;
   color: #CC0814;
+}
+
+@media (max-width: 800px), (max-height: 600px){
+  #start_game {
+    font-size: 10px;
+  }
+}
+
+a {
+  color: cyan;
+}
+
+a:visited {
+  color: cyan;
 }
 </style>
