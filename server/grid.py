@@ -7,12 +7,15 @@ def mark_loc(room_id, x, y):
     if not x in grid[room_id]:
         grid[room_id][x] = {}
 
-    grid[room_id][x][y] = True
+    if y in grid[room_id][x]:
+        grid[room_id][x][y] += 1
+    else:
+        grid[room_id][x][y] = 1
 
-def is_marked(room_id, x, y):
+def mark_val(room_id, x, y):
     if (not room_id in grid or
         not x in grid[room_id] or
         not y in grid[room_id][x]):
-        return False
+        return 0
 
     return grid[room_id][x][y]

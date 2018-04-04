@@ -3,23 +3,38 @@ div(v-if="game_ready")
   canvas#game_window(:width=`this.win_w + "px"`
 		:height=`this.win_h + "px"`
 		  ref="game_window")
+  div(v-show="win_list != null")
+    pre(@click="play_button")
+      br
+      | ██████╗ ██╗      █████╗ ██╗   ██╗     █████╗  ██████╗  █████╗ ██╗███╗   ██╗
+      | ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝    ██╔══██╗██╔════╝ ██╔══██╗██║████╗  ██║
+      | ██████╔╝██║     ███████║ ╚████╔╝     ███████║██║  ███╗███████║██║██╔██╗ ██║
+      | ██╔═══╝ ██║     ██╔══██║  ╚██╔╝      ██╔══██║██║   ██║██╔══██║██║██║╚██╗██║
+      | ██║     ███████╗██║  ██║   ██║       ██║  ██║╚██████╔╝██║  ██║██║██║ ╚████║
+      | ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 div(v-else)
   img(src="/static/sock-logo.gif")
-  pre(@click="button_press")
+  pre(@click="start_game_button")
     template(v-if='show_line') &nbsp
-    | ███████╗████████╗ █████╗ ██████╗ ████████╗ ██████╗  █████╗ ███╗   ███╗███████╗
-    | ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝ ██╔══██╗████╗ ████║██╔════╝
-    | ███████╗   ██║   ███████║██████╔╝   ██║   ██║  ███╗███████║██╔████╔██║█████╗
-    | ╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
-    | ███████║   ██║   ██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
-    | ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
-    |
+    | ███████╗████████╗ █████╗ ██████╗ ████████╗     ██████╗  █████╗ ███╗   ███╗███████╗
+    | ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝
+    | ███████╗   ██║   ███████║██████╔╝   ██║       ██║  ███╗███████║██╔████╔██║█████╗  
+    | ╚════██║   ██║   ██╔══██║██╔══██╗   ██║       ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝  
+    | ███████║   ██║   ██║  ██║██║  ██║   ██║       ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
+    | ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝        ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
     pre(v-show='show_line')
       br
       br
     pre(v-show='blink' :style='{ "font-size": "20px" }')
       br
       | By Quade and Alan
+      br
+      br
+      br
+  pre
+    | Music by: &nbsp
+    a(href="https://opengameart.org/users/matthewpablo") matthewpablo
+		
 </template>
 
 <script>
@@ -60,12 +75,7 @@ export default {
   sockets: {
 	 connect() {
 		console.log("Connected to server")
-		this.canv_players = [];
-
-		this.canv_players = [];
-		this.pl_num = 0;
-		this.win_list = null;
-		this.start_draw_players = false
+		this.reset_state();
 	 },
 	 game_over(players) {
 		this.win_list = players;
@@ -88,7 +98,6 @@ export default {
 	 },
 	 player_num(num) {
 		this.pl_num = num
-		console.log('PLAYER_NUMBER', this.pl_num)
 	 },
 	 update_players(players) {
 		// Figure out time difference.
@@ -144,12 +153,26 @@ export default {
 		  this.canv_players[pl["num"]] = c_pl;
 		});
 	 },
-	 button_press() {
+	 start_game_button() {
 		this.game_ready = true;
 		this.$socket.emit('enter_room')
 	 },
 	 grid_to_win(c) {
 		return c * this.grid-this.grid/2;
+	 },
+	 play_button() {
+		this.game_ready = true;
+		this.$socket.emit('enter_room')
+		this.reset_state()
+	 },
+	 reset_state() {
+		console.log('STATE RESET');
+		this.canv_players = [];
+		this.pl_num = 0;
+		this.win_list = null;
+		this.start_draw_players = false;
+		this.count_down = 0;
+		this.searching = true;
 	 },
 	 draw() {
 		if (this.ctx) {
@@ -157,7 +180,9 @@ export default {
 		  this.draw_grid();
 		  if (this.start_draw_players) {
 			 this.draw_players();
-		  } if (this.count_down > 0) {
+		  }
+
+		  if (this.count_down > 0) {
 			 this.draw_count_down();
 			 this.draw_text_on_head("you");
 		  } else if (this.win_list != null) {
@@ -172,7 +197,6 @@ export default {
 		let color = options.color || "white";
 
 		let size = options.size || this.text_draw_size
-		console.log("Font-size", size)
 		this.ctx.save();
 
 		// Cool TECH font

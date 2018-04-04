@@ -5,6 +5,9 @@ spawn_padding = 4
 # should measure in viewports maybe???
 grid = 10
 
+# The port!
+port = 8888
+
 # Scales the grid_w and grid_h. How many blocks per player
 blocks_per_player = 12
 
@@ -13,11 +16,14 @@ blocks_per_player = 12
 min_dimension = 50
 
 # Measured in snakes
-max_players = 8
+max_players = 10
 
 # Start the countdown once we atleast have
 # this many players
 min_players = 2
+
+# The Area Constant!!!!
+area_constant = 20
 
 # How often we should check that another player has joined the room
 polling_rate = 1

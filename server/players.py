@@ -83,15 +83,17 @@ def move(room_id, player):
     move_by = 1 if (dir == "right" or dir == "down") else -1
     axis = "x" if (dimension == "x") else "y"
 
-    player[axis] += move_by
-    check_collision(room_id, player)
-    check_out_of_bounds(room_id, player)
-
-
-def check_collision(room_id, player):
-    if (grid.is_marked(room_id, player['x'], player['y'])):
+    # Check if you collided with another character.
+    if (grid.mark_val(room_id, player['x'], player['y']) > 1):
         player['alive'] = False
 
+    player[axis] += move_by
+
+    # Check if you are now hitting something.
+    if (grid.mark_val(room_id, player['x'], player['y']) == 1):
+        player['alive'] = False
+
+    check_out_of_bounds(room_id, player)
 
 def check_out_of_bounds(room_id, player):
     room = rooms.room_to_list(room_id)

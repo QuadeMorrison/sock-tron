@@ -1,5 +1,7 @@
 <template lang="pug">
   div(id="app")
+    audio(autoplay loop)
+      source(src="/static/heroic_demise.mp3" type="audio/mpeg")
     router-view
 </template>
 
