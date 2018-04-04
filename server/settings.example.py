@@ -35,21 +35,20 @@ time_padding = 3
 
 # 17 colors for now. These are all very basic colors.
 player_colors = [
-    "#FF0000",
-    "#00FFFF",
-    "Green",
-    "Yellow",
-    "Purple",
-    "#3C78D8",
-    "Mint",
-    "Orange",
-    "Magenta",
-    "Teal",
-    "#A52A2A",
-    "#FFFF00",
-    "#800000",
-    "#00FF00",
-    "#008000",
-    "#FF00FF",
-    "#808000"
+    "#FF0000",  # Red
+    "#00FFFF",  # Blue
+    "#66FF66",  # Green
+    "#FFEB00",  # Yellow
+    "#9C51B6",  # Purple
+    "#FF6037",  # Orange
+    "#FEFEFE",  # Basically white
+    "#E12C2C",  # Red
+    "#2243B6",  # Blue
+    "#FF6EFF",  # Pink
+    "#29AB87",  # Green
+    "#FD0E35",  # Red
+    "#C8C8CD",  # Grey
+    "#FF681F",  # Orange
+    "#33CC99",  # Green
 ]
+
