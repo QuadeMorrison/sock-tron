@@ -9,13 +9,17 @@ dependencies and versions in `requirements.txt` from the server directory.
 
 ## Configuration
 Before you can run the project, make sure the configuration files exist. The
-example files provide sane defaults, so start by copying those to the
-configuration locations:
+example files provide sane defaults that work for localhost, so start by
+copying the example files:
 
 ```bash
 cp server/settings.example.py server/settings.py
 cp client/settings.example.json client/settings.json
 ```
+
+All the configuration options in `settings.py` are described in comments. If
+you're configuring this project for a server, you will need to change "host" in
+settings.json to your IP address or host name.
 
 ## Running the Project
 First start the python server:
